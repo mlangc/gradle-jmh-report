@@ -68,9 +68,8 @@ the daemon's working directory, and the output folder used to have to exist alre
 
 ## Gotchas
 
-- The jar must target a Kotlin API version no newer than the Kotlin embedded in the oldest checked Gradle
-  (1.7 for 7.6.4). The consumer deliberately puts no `kotlin-stdlib` on the classpath: Gradle's own is used
-  parent-first anyway.
+- The jar is plain Java 8 and bundles no Kotlin; it must keep working as a consumer plugin on Gradle 3.5 (no APIs newer than that,
+  e.g. `tasks.register`).
 - Always `mise install java@<x>` before `mise where java@<x>`; `check.py` does this.
 - Gradle 9.8.0 is the newest checked version; to bump a patch version only change `version` in
   `gradle-versions.toml`.
