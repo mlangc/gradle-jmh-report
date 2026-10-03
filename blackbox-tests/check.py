@@ -60,6 +60,7 @@ class Scenario:
     project: str
     input_name: str | None  # None: no input is provided
     min_major: int = 0
+    report_dir: Path = REPORT_DIR  # relative to the project; where the report is written
 
     @property
     def run_name(self) -> str:
@@ -71,7 +72,9 @@ SCENARIOS = [
     Scenario("S1", "s1", "results.json"),
     Scenario("S2", "s2", "results.json"),
     Scenario("S3", "s3", "my-run.json"),
+    Scenario("S4", "s4", "results.json", report_dir=Path("build/reports/jmh-report")),
     Scenario("S5", "s5", None),
+    Scenario("S6", "s6", "results.json"),
     Scenario("S7", "s7", "results.json", min_major=5),  # Kotlin DSL
     Scenario("S8", "s8", "results.json"),  # run twice, see run_version
 ]
@@ -292,7 +295,7 @@ def hash_output(out_dir: Path, exclude: set[str]) -> dict[str, str]:
 def check_report(
     node: str,
     out_dir: Path,
-    input_name: str,
+    input_file: Path,
     expected_input: bytes,
     expected_provided: dict[str, Any],
     golden_files: dict[str, str],
@@ -303,7 +306,7 @@ def check_report(
     if not out_dir.is_dir():
         return [f"output folder {out_dir} doesn't exist"]
 
-    actual_files = hash_output(out_dir, exclude={input_name})
+    actual_files = hash_output(out_dir, exclude={input_file.name})
     for name in sorted(golden_files.keys() - actual_files.keys()):
         problems.append(f"missing file: {name}")
     for name in sorted(actual_files.keys() - golden_files.keys()):
@@ -312,9 +315,8 @@ def check_report(
         if golden_files[name] != actual_files[name]:
             problems.append(f"content differs: {name}")
 
-    input_file = out_dir / input_name
     if not input_file.is_file() or input_file.read_bytes() != expected_input:
-        problems.append(f"input {input_name} was modified or removed")
+        problems.append(f"input {input_file.name} was modified or removed")
 
     provided_js = out_dir / "provided.js"
     if not provided_js.is_file():
@@ -375,7 +377,11 @@ def run_version(
     golden_files, golden_provided = golden if golden else ({}, {})
 
     def out_dir(s: Scenario) -> Path:
-        return consumer / s.project / REPORT_DIR
+        return consumer / s.project / s.report_dir
+
+    def input_file(s: Scenario) -> Path:
+        assert s.input_name is not None
+        return consumer / s.project / REPORT_DIR / s.input_name
 
     def verify(
         s: Scenario, expected_input: bytes, expected_provided: dict[str, Any], console: bool
@@ -384,7 +390,7 @@ def run_version(
         return check_report(
             node,
             out_dir(s),
-            s.input_name,
+            input_file(s),
             expected_input,
             expected_provided,
             golden_files,
@@ -424,7 +430,7 @@ def run_version(
             for p in check_report(
                 node,
                 out_dir(s8),
-                "results.json",
+                input_file(s8),
                 edited_input(),
                 edited_provided(golden_provided),
                 golden_files,

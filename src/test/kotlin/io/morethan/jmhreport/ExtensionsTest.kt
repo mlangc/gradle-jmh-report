@@ -9,9 +9,9 @@ import java.io.File
 class ExtensionsTest : Spek({
 
     describe("Extract a zip") {
-        val testFolder = File("build/tests");
-        testFolder.deleteRecursively();
-        testFolder.mkdirs();
+        // the target folder must not exist: extract creates it
+        val testFolder = File("build/tests/not/yet/there");
+        File("build/tests").deleteRecursively();
 
         val jmhVisualizerZip = this.javaClass.getResourceAsStream("/jmh-visualizer.zip");
         assertThat(jmhVisualizerZip).isNotNull();

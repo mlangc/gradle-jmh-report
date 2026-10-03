@@ -37,8 +37,9 @@ open class JmhReportTask : DefaultTask() {
     @TaskAction
     fun generateReport() {
         val extension: JmhReportExtension = project.extensions.getByType(JmhReportExtension::class.java);
-        val reportFile = File(extension.jmhResultPath)
-        val outputFolder = File(extension.jmhReportOutput)
+        // project.file resolves relative paths against the project directory (and takes File as well as String)
+        val reportFile = project.file(checkNotNull(extension.jmhResultPath, { "jmhResultPath must not be null" }))
+        val outputFolder = project.file(checkNotNull(extension.jmhReportOutput, { "jmhReportOutput must not be null" }))
 
         check(reportFile.exists(), { "Input '${reportFile.canonicalFile}' does not exists!" })
 

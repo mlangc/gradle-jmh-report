@@ -6,6 +6,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 fun ZipInputStream.extract(targetDirectory: File) {
+    targetDirectory.mkdirs();
     while (true) {
         val entry: ZipEntry? = this.getNextEntry();
         if (entry == null) {
@@ -15,6 +16,7 @@ fun ZipInputStream.extract(targetDirectory: File) {
         if (entry.isDirectory) {
             entryFile.mkdirs();
         } else {
+            entryFile.parentFile.mkdirs();
             FileOutputStream(entryFile).use { fileOutputStream ->
                 this.copyTo(fileOutputStream);
             }

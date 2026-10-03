@@ -36,10 +36,10 @@ plugins {
   id "io.morethan.jmhreport" version "0.9.0"
 }
 ```
-- Configure the plugin:
+- Configure the plugin (only needed if your paths differ from the defaults shown here; relative paths are resolved against the project directory):
 ```
 jmhReport {
-    jmhResultPath = project.file('build/reports/jmh/result.json')
+    jmhResultPath = project.file('build/reports/jmh/results.json')
     jmhReportOutput = project.file('build/reports/jmh')
 }
 ```

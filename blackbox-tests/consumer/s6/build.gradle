@@ -1,0 +1,2 @@
+// Defaults only: no jmhReport {} block
+apply plugin: 'io.morethan.jmhreport'

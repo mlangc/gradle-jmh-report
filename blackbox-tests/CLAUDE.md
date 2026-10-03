@@ -57,14 +57,14 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
 | S1 | explicit config = intended defaults, `File` values | golden |
 | S2 | as S1, absolute `String` paths | golden |
 | S3 | input named `my-run.json` | golden with run name `my-run` |
+| S4 | as S1, output folder `build/reports/jmh-report` doesn't exist yet | golden |
 | S5 | input missing | fails with `Input '…' does not exists!` |
+| S6 | defaults: no `jmhReport {}` block | golden |
 | S7 | as S1 in Kotlin DSL (skipped on 3.5) | golden |
 | S8 | as S1, run twice with a changed `score` in between | second run reflects the change (not UP-TO-DATE) |
 
-Known bugs of 0.9.6 that the baseline scenarios avoid: relative `String` paths (and so the defaults) resolve against
-the daemon's working directory, and the output folder must already exist. Their fixes add S6 (defaults, no
-`jmhReport {}` block) and S4 (output folder doesn't exist yet), which must produce exactly the S1 output with the
-same golden.
+S4 and S6 guard fixes of two bugs in 0.9.6: relative `String` paths (and so the defaults) used to resolve against
+the daemon's working directory, and the output folder used to have to exist already.
 
 ## Gotchas
 
