@@ -34,6 +34,8 @@ The build is pinned to an old toolchain: Gradle 3.5 wrapper, Kotlin 1.1.x, `sour
 - End-to-end check against the example project (uses the jar from `build/libs` via a `flatDir` repo):
   `./gradlew jar; ./gradlew -p exampleProjects/java-benchmarks/ jmh -Pinclude=".*QuickBenchmark.*"`
   The example's `jmh` task is finalized by `jmhReport`, which writes `exampleProjects/java-benchmarks/build/reports/jmh/index.html`.
+- Black-box check of the built jar against a golden report, under several Gradle versions: see
+  `blackbox-tests/CLAUDE.md`. Run it before and after changes to the plugin or the build.
 
 ## Architecture
 
