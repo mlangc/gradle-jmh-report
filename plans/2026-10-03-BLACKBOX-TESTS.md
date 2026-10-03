@@ -1,6 +1,6 @@
 # Plan: Black-box tests
 
-Status: **approved, not started**.
+Status: **implemented**.
 
 This plan covers only the black-box tests, a check that compares the plugin's output with a golden snapshot.
 The modernization itself will be planned separately; this check is the safety net it builds on.
