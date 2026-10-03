@@ -92,7 +92,7 @@ unnoticed, since JDK 18+ defaults to UTF-8 (JEP 400) and so do typical locales.
   offline once the Gradle distributions are cached. For the modernization this means: the jar must target a
   Kotlin API version no newer than the embedded Kotlin of the oldest checked Gradle (1.7 for 7.6.4), and the
   check catches violations.
-- The daemon runs with a non-UTF-8 default charset (`org.gradle.jvmargs=-Dfile.encoding=ISO-8859-1` in the
+- The daemon runs with a non-UTF-8 default charset (`org.gradle.jvmargs=-Dfile.encoding=US-ASCII` in the
   fixture's `gradle.properties`; verified to take effect on JDK 25, and 0.9.6 still writes `größe` correctly).
 - Later, once the modernized build can publish to a local file repo (`maven-publish` to `build/repo`), the fixture
   can resolve the plugin like real users do: via `pluginManagement` and `plugins { id … }`, with a real POM and

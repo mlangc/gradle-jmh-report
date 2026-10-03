@@ -45,7 +45,7 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
   passes again so the field gets removed. No version has one at the moment.
 - `consumer/`: the Gradle fixture project, one subproject per scenario, loading the jar from `libs/` through
   `flatDir` (filled by `check.py`, which also adds a wrapper for the Gradle version under test). The daemon runs
-  with `-Dfile.encoding=ISO-8859-1` on purpose.
+  with `-Dfile.encoding=US-ASCII` on purpose.
 - `data/results.json`: the input fixture. A copy of `e2e/fixtures/linked-hash-first-vs-iter-next-benchmark.json`
   from https://github.com/mlangc/jmh-visualizer at commit `ff75572af2effc5ea9e1441515713bced82a3597`, with
   the param `size` renamed to `größe` (so a charset regression shows up). Not kept in sync.
