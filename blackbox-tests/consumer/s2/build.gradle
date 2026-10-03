@@ -1,0 +1,6 @@
+apply plugin: 'io.morethan.jmhreport'
+
+jmhReport {
+    jmhResultPath = project.file('build/reports/jmh/results.json').absolutePath
+    jmhReportOutput = project.file('build/reports/jmh').absolutePath
+}

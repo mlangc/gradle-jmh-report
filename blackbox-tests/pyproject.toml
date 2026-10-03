@@ -1,0 +1,21 @@
+[project]
+name = "blackbox-tests"
+version = "0.0.0"
+description = "Black-box check of the gradle-jmh-report plugin jar against a golden snapshot"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = ["mypy", "ruff"]
+
+[tool.uv]
+package = false
+
+[tool.mypy]
+strict = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

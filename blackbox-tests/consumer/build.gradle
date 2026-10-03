@@ -1,0 +1,12 @@
+// The jar under test is put into libs/ by check.py.
+// No kotlin-stdlib is added on purpose: plugin classloaders see Gradle's bundled one parent-first anyway.
+buildscript {
+    repositories {
+        flatDir {
+            dirs file('libs').absolutePath
+        }
+    }
+    dependencies {
+        classpath 'io.morethan:gradle-jmh-report'
+    }
+}

@@ -1,0 +1,23 @@
+# The Gradle versions the check knows about, each with the Java version it runs on (resolved via mise).
+# Optional keys: known-failure = "<short reason>", distribution = "bin" (default) | "all".
+
+[[gradle]]
+name = "3.5"
+version = "3.5"            # exactly the project's current wrapper version
+mise-java = "corretto-8"
+distribution = "all"       # matches what's already cached from the project's wrapper
+
+[[gradle]]
+name = "7.x"
+version = "7.6.4"
+mise-java = "17"
+
+[[gradle]]
+name = "8.x"
+version = "8.14.3"
+mise-java = "21"
+
+[[gradle]]
+name = "9.x"
+version = "9.8.0"
+mise-java = "25"
