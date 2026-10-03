@@ -18,6 +18,11 @@ version = "8.14.3"
 mise-java = "21"
 
 [[gradle]]
+name = "8.x-j8"
+version = "8.14.3"         # newest Gradle that still runs on Java 8; the build's migration target
+mise-java = "corretto-8"
+
+[[gradle]]
 name = "9.x"
 version = "9.8.0"
 mise-java = "25"
