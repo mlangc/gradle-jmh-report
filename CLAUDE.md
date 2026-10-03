@@ -6,6 +6,24 @@ This file provides guidance to agents when working with code in this repository.
 
 A Gradle plugin (`io.morethan.jmhreport`, written in Kotlin) that turns an existing JMH JSON result file into an HTML report. It does **not** run benchmarks; it only reports on results already produced by some other JMH setup.
 
+## Commit message style
+
+The maintainer's own commits are almost always a single-line subject with no
+body — e.g. `Release 0.9.6`, `Quick hack for heterogenous test setups of a
+class`, `Fix multi file gists`, `#35 Stabelize gist order`. The multi-line
+ones in the log are squash-merged PRs or dependabot's auto-generated
+messages, not commits the maintainer wrote by hand. Match this: keep the
+subject terse and skip any descriptive body/bullet list. This is about the
+message content only — Claude Code's own attribution trailer
+(`Co-Authored-By:` / `Claude-Session:`), when the session's settings call for
+it, still gets appended mechanically and doesn't count as "body prose."
+
+One narrow exception: when working from a tracked implementation plan (e.g.
+`plans/*.md`), the body may contain a bare reference to that plan and
+nothing else — no descriptive prose, no bullet list. A plan may state this
+requirement itself (see its own Ground rules); absent that, still keep
+bodies empty by default.
+
 ## Build & test
 
 The build is pinned to an old toolchain: Gradle 3.5 wrapper, Kotlin 1.1.x, `sourceCompatibility=1.7`, `compile`/`testCompile` configurations, `jcenter()`. An upgrade of the wrapper to 4.9 was attempted and reverted (see git log), so don't bump Gradle/Kotlin as a side effect of other changes. Gradle 3.5 needs an old JDK (Java 8) to run.
@@ -37,3 +55,30 @@ The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](ht
 3. Update *News* and *Getting Started* in `README.md`, and the plugin version in every `exampleProjects/*/build.gradle`.
 4. Test the report with the example project (command above).
 5. Commit, tag (`git tag -a $releaseVersion -m "$releaseVersion release"`, `git push --tags`), then `./gradlew publishPlugins`.
+
+## Agentic Reviews
+
+### By Subagents
+
+When I ask you to let a subagent review your work, please consider this:
+- Use Opus as a reviewer, in a fresh subagent — not a fork, since a fork
+  inherits your full context and always runs on your own model, which
+  defeats the point of an independent pair of eyes.
+- Tell the subagent what you were tasked to do.
+- Where I gave you a specific instruction, constraint, or correction that
+  shapes what the review should check, quote my own words directly rather
+  than only your paraphrase of them — a paraphrase can silently carry your
+  own misreading forward, and the reviewer has no way to catch that if it
+  only ever sees your restatement. Don't dump the whole conversation on it
+  though; a fresh pair of eyes is the point.
+- The reviewer must not modify the implementer's worktree, and is expected
+  to report findings back rather than fix anything itself. It's encouraged
+  to create its own temporary worktree off the implementer's branch to
+  experiment, confirm suspicions, or verify proposed fixes.
+
+### By You
+
+If I ask you to review something directly, don't change anything in the
+worktree — just report your findings. Base them on evidence rather than
+speculation: as with the subagent reviewer above, you're encouraged to create
+your own temporary worktree to experiment in and confirm your suspicions.
