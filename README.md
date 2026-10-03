@@ -54,7 +54,6 @@ jmhReport {
 
 
 ## Project Build
-- Prepare the project for import into Eclipse: `./gradlew cleanEclipse eclipse`
 - Execute the examples: `./gradlew jar ;./gradlew -p exampleProjects/java-benchmarks/ jmh`
 - How to publish the Gradle plugin:
   - (Optional) Integrate new version of https://github.com/jzillmann/jmh-visualizer
