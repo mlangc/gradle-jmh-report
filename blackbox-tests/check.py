@@ -90,6 +90,7 @@ class VersionResult:
     deprecations: list[str] = field(default_factory=list)
     configuration_cache: str | None = None
     error: str | None = None
+    log: str = ""
 
     @property
     def failed(self) -> bool:
@@ -121,7 +122,7 @@ def load_versions() -> list[GradleVersion]:
 
 
 def run(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", **kwargs)
 
 
 def resolve_java_home(spec: str) -> Path:
@@ -398,7 +399,13 @@ def run_version(
         elif s.id == "S5":
             expected = real(out_dir(s) / "results.json")
             messages = {real(m) for m in MISSING_INPUT_LINE.findall(log)}
-            problems = [] if expected in messages else [f"no 'Input '{expected}' does not exists!'"]
+            problems = []
+            if expected not in messages:
+                problems.append(f"no 'Input '{expected}' does not exists!'")
+            if f"Execution failed for task ':{s.project}:jmhReport'" not in log:
+                problems.append("task didn't fail")
+            if (out_dir(s) / "index.html").exists():
+                problems.append("a report was written despite the missing input")
             result.outcomes[s.id] = Outcome("fail" if problems else "pass", problems)
         elif s.id == "S8":
             continue  # after the second run
@@ -442,6 +449,7 @@ def run_version(
         }
         succeeded = s1_ok and "BUILD SUCCESSFUL" in cc_log
         result.configuration_cache = "passes" if succeeded else "fails"
+    result.log = log
     return result, consumer
 
 
@@ -460,8 +468,10 @@ def read_golden() -> tuple[dict[str, str], dict[str, Any]]:
     return files, provided
 
 
-def write_golden(node: str, consumer: Path) -> None:
+def write_golden(node: str, consumer: Path, log: str) -> None:
     out = consumer / "s1" / REPORT_DIR
+    if real(out) not in {real(m) for m in CONSOLE_LINE.findall(log)}:
+        raise CheckError(f"S1 didn't report success; see the Gradle log in {LOGS}")
     files = hash_output(out, exclude={"results.json"})
     if not files:
         raise CheckError(f"S1 produced no output in {out}; see the Gradle log in {LOGS}")
@@ -502,7 +512,9 @@ def report(results: list[VersionResult]) -> bool:
         for sid, o in r.outcomes.items():
             for p in o.problems:
                 print(f"\n[{g.name}] {sid}: {p}")
-        if g.known_failure:
+        if r.error:
+            ok = False  # an error in the check itself is never a known failure
+        elif g.known_failure:
             if not r.failed:
                 print(
                     f"\n[{g.name}] marked known-failure ({g.known_failure}) but passes: remove it"
@@ -577,7 +589,7 @@ def main() -> int:
         if args.update_golden:
             if results[0].error:
                 raise CheckError(results[0].error)
-            write_golden(node, consumers[selected[0].name])
+            write_golden(node, consumers[selected[0].name], results[0].log)
             return 0
 
         ok = report(results)

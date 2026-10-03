@@ -6,11 +6,11 @@ while that build is modernized. Background and rationale: `plans/2026-10-03-BLAC
 
 ## Running
 
-Needs `mise install` (Java versions, `node`, `uv`). From this folder:
+Needs `mise install` (Java versions, `node`, `uv`). From the repository root:
 
 ```
+./gradlew jar                                              # JDK 8 via mise, as usual
 cd blackbox-tests
-(cd .. && ./gradlew jar)                                   # JDK 8 via mise, as usual
 uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar [--gradle 7.x,8.x]
 uv run ruff check && uv run ruff format --check && uv run mypy .
 ```
