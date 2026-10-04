@@ -27,8 +27,8 @@ tasks.withType(Test).configureEach {
 }
 
 gradlePlugin {
-  website.set('https://github.com/jzillmann/gradle-jmh-report')
-  vcsUrl.set('https://github.com/jzillmann/gradle-jmh-report')
+  website.set('https://github.com/mlangc/gradle-jmh-report')
+  vcsUrl.set('https://github.com/mlangc/gradle-jmh-report')
 
   plugins {
     jmhReportPlugin {
