@@ -9,7 +9,7 @@ import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ExtensionsTest {
+class FsUtilsTest {
 
     @Test
     void extractsZip() throws IOException {
@@ -20,7 +20,7 @@ class ExtensionsTest {
         try (InputStream jmhVisualizerZip = getClass().getResourceAsStream("/jmh-visualizer.zip")) {
             assertThat(jmhVisualizerZip).isNotNull();
             try (ZipInputStream zipStream = new ZipInputStream(jmhVisualizerZip)) {
-                Extensions.extract(zipStream, testFolder);
+                FsUtils.extract(zipStream, testFolder);
             }
         }
 

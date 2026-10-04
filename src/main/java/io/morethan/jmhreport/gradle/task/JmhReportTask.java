@@ -15,7 +15,7 @@
  */
 package io.morethan.jmhreport.gradle.task;
 
-import io.morethan.jmhreport.Extensions;
+import io.morethan.jmhreport.FsUtils;
 import io.morethan.jmhreport.gradle.JmhReportExtension;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
@@ -58,7 +58,7 @@ public class JmhReportTask extends DefaultTask {
 
         try (InputStream jmhVisualizerZip = getClass().getResourceAsStream("/jmh-visualizer.zip");
              ZipInputStream zipStream = new ZipInputStream(jmhVisualizerZip)) {
-            Extensions.extract(zipStream, outputFolder);
+            FsUtils.extract(zipStream, outputFolder);
         }
 
         String runName = removeExtension(reportFile.getName());

@@ -7,9 +7,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public final class Extensions {
+public final class FsUtils {
 
-    private Extensions() {
+    private FsUtils() {
     }
 
     /** Extracts all entries of the zip into the given directory, creating it (and missing parents) if necessary. */
