@@ -32,7 +32,7 @@ The build uses the Gradle 8.0.2 wrapper (run it with JDK 8 via mise), `java-grad
 - Run tests: `./gradlew test`
 - Single test class: `./gradlew test --tests io.morethan.jmhreport.ExtensionsTest` (JUnit 5 with AssertJ)
 - End-to-end check against the example project (uses the jar from `build/libs` via a `flatDir` repo):
-  `./gradlew jar; ./gradlew -p exampleProjects/java-benchmarks/ jmh -Pinclude=".*QuickBenchmark.*"`
+  `./gradlew jar; (cd exampleProjects && ./gradlew :java-benchmarks:jmh -Pinclude=".*QuickBenchmark.*")`
   The example's `jmh` task is finalized by `jmhReport`, which writes `exampleProjects/java-benchmarks/build/reports/jmh/index.html`.
 - Black-box check of the built jar against a golden report, under several Gradle versions: see
   `blackbox-tests/CLAUDE.md`. Run it before and after changes to the plugin or the build.
@@ -48,13 +48,13 @@ The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](ht
   2. Overwrites `provided.js` with the JMH result JSON embedded as JS globals (`providedBenchmarks`, `providedBenchmarkStore`, keyed by the result file's base name). jmh-visualizer reads these globals at load time, so the contract between the two projects is the shape of `provided.js`.
 - The task declares no Gradle inputs/outputs, so it is never up-to-date and always re-runs.
 
-`exampleProjects/` holds standalone Gradle builds (Java and Kotlin benchmarks) that consume the locally built jar. `exampleProjects/jmh.gradle` is a do-it-yourself JMH setup script they apply (supports `-Pinclude`, `-Pexclude`, `-Pformat`, `-Pprofilers`, `-PjvmArgs`).
+`exampleProjects/` is a standalone multi-project Gradle build (own wrapper; `java-benchmarks` and `kotlin-benchmarks` subprojects) that consumes the locally built jar. `exampleProjects/jmh.gradle` is a do-it-yourself JMH setup script they apply (supports `-Pinclude`, `-Pexclude`, `-Pformat`, `-Pprofilers`, `-PjvmArgs`).
 
 ## Release process (from README)
 
 1. (Optional) Update the visualizer: in jmh-visualizer run `npm run providedZip`, then replace `src/main/resources/jmh-visualizer.zip`.
 2. Bump `projectVersion` in `gradle.properties`.
-3. Update *News* and *Getting Started* in `README.md`, and the plugin version in every `exampleProjects/*/build.gradle`.
+3. Update *News* and *Getting Started* in `README.md` (`exampleProjects/` reads the plugin version from `gradle.properties`).
 4. Test the report with the example project (command above).
 5. Commit, tag (`git tag -a $releaseVersion -m "$releaseVersion release"`, `git push --tags`), then `./gradlew publishPlugins`.
 

@@ -1,57 +1,23 @@
-// Execute with ./gradlew jar; ./gradlew -p exampleProjects/java-benchmarks/
-
-buildscript {
-
-    repositories {
-        jcenter()
-        flatDir {
-            dirs file('../../build/libs').absolutePath
-        }
-    }
-    dependencies {
-        classpath 'io.morethan:gradle-jmh-report:0.9.6'
-        
-        //transitive dependencies since we grep the plugin from build/libs
-        classpath(group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.1.2-3')
-    }
-}
-
-
 apply plugin: 'java'
-apply plugin: 'eclipse'
 apply plugin: 'io.morethan.jmhreport'
 
-apply from: rootProject.file('../jmh.gradle')
+apply from: rootProject.file('jmh.gradle')
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-repositories {
-    jcenter()
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
-    compile group: 'com.google.guava', name: 'guava', version: '19.0'
-    compile group: 'com.jakewharton.byteunits', name: 'byteunits', version:'0.9.1'
+    implementation 'com.google.guava:guava:19.0'
+    implementation 'com.jakewharton.byteunits:byteunits:0.9.1'
 
-    compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.6.0'
-    compile group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: '2.6.0'
+    implementation 'org.apache.hadoop:hadoop-common:2.6.0'
+    implementation 'org.apache.hadoop:hadoop-hdfs:2.6.0'
 
-    compile group: 'com.yahoo.datasketches', name: 'memory', version: '0.8.4'
+    implementation 'com.yahoo.datasketches:memory:0.8.4'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.assertj:assertj-core:2.3.0'
-}
-
-eclipse {
-    jdt.file.withProperties {
-        it['org.eclipse.jdt.core.formatter.lineSplit'] = '200'
-        it['org.eclipse.jdt.core.formatter.comment.line_length'] = '120'
-        it['org.eclipse.jdt.core.formatter.tabulation.char'] = 'space'
-        it['org.eclipse.jdt.core.formatter.tabulation.size'] = '4'
-        it['org.eclipse.jdt.core.formatter.join_wrapped_lines'] = 'false'
-        it['org.eclipse.jdt.core.compiler.problem.missingOverrideAnnotation'] = 'warning'
-    }
+    jmhImplementation 'org.assertj:assertj-core:3.27.7'
 }
 
 jmhReport {
@@ -59,5 +25,4 @@ jmhReport {
     jmhReportOutput = project.file('build/reports/jmh')
 }
 
-tasks.jmh.finalizedBy tasks.jmhReport 
-
+tasks.jmh.finalizedBy tasks.jmhReport

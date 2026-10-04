@@ -1,15 +1,19 @@
 # JMH example projects
 
-There is:
+A standalone Gradle build (independent of the plugin's own build) with two subprojects:
 - java-benchmarks: benchmarking simple things of Java
 - kotlin-benchmarks: benchmarking simple things of Kotlin
 
-h1. How to execute
+The build consumes the plugin jar from `../build/libs`, so build that first.
+
+## How to execute
 
 ```
-./gradlew jar; ./gradlew -p exampleProjects/java-benchmarks/ jmh 
+./gradlew jar
+cd exampleProjects
+./gradlew :java-benchmarks:jmh
+./gradlew :kotlin-benchmarks:jmh
 ```
 
-```
-./gradlew jar; ./gradlew -p exampleProjects/kotlin-benchmarks/ jmh 
-```
+Use `-Pinclude=".*QuickBenchmark.*"` to run only some benchmarks (see `./gradlew jmhHelp`). The report ends up in
+`<project>/build/reports/jmh/index.html`.

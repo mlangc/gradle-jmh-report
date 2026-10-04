@@ -54,15 +54,14 @@ jmhReport {
 
 
 ## Project Build
-- Execute the examples: `./gradlew jar ;./gradlew -p exampleProjects/java-benchmarks/ jmh`
+- Execute the examples: `./gradlew jar ;cd exampleProjects; ./gradlew :java-benchmarks:jmh`
 - How to publish the Gradle plugin:
   - (Optional) Integrate new version of https://github.com/jzillmann/jmh-visualizer
     - `npm run providedZip`
     - `mv jmh-visualizer.zip ../../eclipse/gradle-jmh-report/src/main/resources/`
   - Increase version in _gradle.properties_
   - Update _News_ and _Getting Started_ in _README.md_
-  - Update version number of in build.gradle for all example projects
-  - Test report: `./gradlew jar ;./gradlew  jmh -p exampleProjects/java-benchmarks/ -Pinclude=".*QuickBenchmark.*"`
+  - Test report: `./gradlew jar ;cd exampleProjects; ./gradlew :java-benchmarks:jmh -Pinclude=".*QuickBenchmark.*"`
   - Commit & Push
   - tag with
     - `git tag -a $releaseVersion -m "$releaseVersion release"`

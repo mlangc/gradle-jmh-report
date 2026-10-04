@@ -1,0 +1,24 @@
+// Standalone build, independent of the plugin's own build. It consumes the plugin jar from ../build/libs,
+// so run `./gradlew jar` in the repository root first.
+//
+// Execute with: ./gradlew :java-benchmarks:jmh -Pinclude=".*QuickBenchmark.*"
+
+buildscript {
+    def projectVersion = new Properties()
+    file('../gradle.properties').withInputStream { projectVersion.load(it) }
+
+    repositories {
+        flatDir {
+            dirs file('../build/libs').absolutePath
+        }
+    }
+    dependencies {
+        classpath "io.morethan:gradle-jmh-report:${projectVersion.getProperty('projectVersion')}"
+    }
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
+    }
+}
