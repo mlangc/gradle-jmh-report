@@ -33,7 +33,7 @@
 - Add the plugin:
 ```
 plugins {
-  id "io.morethan.jmhreport" version "0.9.0"
+  id "com.github.mlangc.jmhreport" version "0.9.0"
 }
 ```
 - Configure the plugin (only needed if your paths differ from the defaults shown here; relative paths are resolved against the project directory):

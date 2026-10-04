@@ -7,6 +7,6 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'io.morethan:gradle-jmh-report'
+        classpath 'com.github.mlangc:gradle-jmh-report'
     }
 }

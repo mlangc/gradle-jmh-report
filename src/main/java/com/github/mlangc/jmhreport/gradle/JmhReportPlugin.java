@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.morethan.jmhreport.gradle;
+package com.github.mlangc.jmhreport.gradle;
 
-import io.morethan.jmhreport.gradle.task.JmhReportTask;
+import com.github.mlangc.jmhreport.gradle.task.JmhReportTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 

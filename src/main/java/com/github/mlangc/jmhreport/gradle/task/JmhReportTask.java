@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.morethan.jmhreport.gradle.task;
+package com.github.mlangc.jmhreport.gradle.task;
 
-import io.morethan.jmhreport.FsUtils;
-import io.morethan.jmhreport.gradle.JmhReportExtension;
+import com.github.mlangc.jmhreport.FsUtils;
+import com.github.mlangc.jmhreport.gradle.JmhReportExtension;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;

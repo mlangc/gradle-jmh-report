@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.morethan.jmhreport.gradle;
+package com.github.mlangc.jmhreport.gradle;
 
 /** The global configuration of the plugin. */
 public class JmhReportExtension {

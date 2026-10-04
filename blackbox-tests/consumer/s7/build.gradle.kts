@@ -1,6 +1,6 @@
-import io.morethan.jmhreport.gradle.JmhReportExtension
+import com.github.mlangc.jmhreport.gradle.JmhReportExtension
 
-apply(plugin = "io.morethan.jmhreport")
+apply(plugin = "com.github.mlangc.jmhreport")
 
 configure<JmhReportExtension> {
     jmhResultPath = file("build/reports/jmh/results.json").absolutePath
