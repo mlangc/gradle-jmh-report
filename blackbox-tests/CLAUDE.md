@@ -11,7 +11,7 @@ Needs `mise install` (Java versions, `node`, `uv`). From the repository root:
 ```
 ./gradlew jar                                              # JDK 8 via mise, as usual
 cd blackbox-tests
-uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar [--gradle 7.x,8.x]
+uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar [--gradle 8.0,8.x]
 uv run ruff check && uv run ruff format --check && uv run mypy .
 ```
 
@@ -31,7 +31,7 @@ Only when the plugin's output is meant to change (e.g. a new jmh-visualizer bund
 uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar --update-golden --gradle <name>
 ```
 
-Requires exactly one Gradle name (initially `3.5`). It records `golden/` from scenario S1 without comparing
+Requires exactly one Gradle name (initially `8.0`). It records `golden/` from scenario S1 without comparing
 anything; then run a normal check on all versions. `git diff golden/` shows what changed. `golden/` holds SHA-256
 hashes of the extracted visualizer files and the two `provided.js` globals as canonical JSON.
 
@@ -40,7 +40,7 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
 - `check.py`: entry point. `evaluate_provided.mjs`: runs `provided.js` in a `node:vm` context and prints the two
   globals as JSON (fails on any other global).
 - `gradle-versions.toml`: Gradle versions to check, with the Java version each runs on. Beyond the plan's keys,
-  `distribution = "all"` selects the `-all` distribution (used for 3.5 only). `known-failure = "<reason>"` marks a
+  `distribution = "all"` selects the `-all` distribution (no version uses it at the moment). `known-failure = "<reason>"` marks a
   version where the jar is known to fail; it then shows as "known failure", and the check complains once it
   passes again so the field gets removed. No version has one at the moment.
 - `consumer/`: the Gradle fixture project, one subproject per scenario, loading the jar from `libs/` through
@@ -60,7 +60,7 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
 | S4 | as S1, output folder `build/reports/jmh-report` doesn't exist yet | golden |
 | S5 | input missing | fails with `Input '…' does not exists!` |
 | S6 | defaults: no `jmhReport {}` block | golden |
-| S7 | as S1 in Kotlin DSL (skipped on 3.5) | golden |
+| S7 | as S1 in Kotlin DSL (skipped below Gradle 5, i.e. never at the moment) | golden |
 | S8 | as S1, run twice with a changed `score` in between | second run reflects the change (not UP-TO-DATE) |
 
 S4 and S6 guard fixes of two bugs in 0.9.6: relative `String` paths (and so the defaults) used to resolve against
@@ -68,8 +68,8 @@ the daemon's working directory, and the output folder used to have to exist alre
 
 ## Gotchas
 
-- The jar is plain Java 8 and bundles no Kotlin; it must keep working as a consumer plugin on Gradle 3.5 (no APIs newer than that,
-  e.g. `tasks.register`).
+- The jar is plain Java 8 and bundles no Kotlin; it must keep working as a consumer plugin on Gradle 8.0 (no APIs newer than that).
+  Gradle 8.0 is the oldest supported version.
 - Always `mise install java@<x>` before `mise where java@<x>`; `check.py` does this.
 - Gradle 9.8.0 is the newest checked version; to bump a patch version only change `version` in
   `gradle-versions.toml`.

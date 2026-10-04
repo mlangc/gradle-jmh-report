@@ -27,8 +27,8 @@ tasks.withType(Test).configureEach {
 }
 
 gradlePlugin {
-  website = 'https://github.com/jzillmann/gradle-jmh-report'
-  vcsUrl = 'https://github.com/jzillmann/gradle-jmh-report'
+  website.set('https://github.com/jzillmann/gradle-jmh-report')
+  vcsUrl.set('https://github.com/jzillmann/gradle-jmh-report')
 
   plugins {
     jmhReportPlugin {
@@ -36,7 +36,7 @@ gradlePlugin {
       implementationClass = 'io.morethan.jmhreport.gradle.JmhReportPlugin'
       displayName = 'JMH Report plugin'
       description = 'A Gradle plugin building a visual report on top of your JMH benchmark results!'
-      tags = ['jmh', 'report', 'visualization']
+      tags.set(['jmh', 'report', 'visualization'])
     }
   }
 }

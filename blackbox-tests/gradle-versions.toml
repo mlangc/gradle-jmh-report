@@ -1,26 +1,25 @@
 # The Gradle versions the check knows about, each with the Java version it runs on (resolved via mise).
-# Optional keys: known-failure = "<short reason>", distribution = "bin" (default) | "all".
+# Supported range: Gradle 8.0 and newer. Optional keys: known-failure = "<short reason>", distribution = "bin" (default) | "all".
 
 [[gradle]]
-name = "3.5"
-version = "3.5"            # exactly the project's current wrapper version
+name = "8.0"
+version = "8.0"            # oldest supported Gradle; catches use of newer APIs
 mise-java = "corretto-8"
-distribution = "all"       # matches what's already cached from the project's wrapper
-
-[[gradle]]
-name = "7.x"
-version = "7.6.4"
-mise-java = "17"
-
-[[gradle]]
-name = "8.x"
-version = "8.14.3"
-mise-java = "21"
 
 [[gradle]]
 name = "8.x-j8"
 version = "8.14.3"         # newest Gradle that still runs on Java 8; the build's migration target
 mise-java = "corretto-8"
+
+[[gradle]]
+name = "8.x"
+version = "8.14.3"         # newest 8.x on a modern JVM
+mise-java = "21"
+
+[[gradle]]
+name = "9.0"
+version = "9.0.0"          # oldest 9.x; Gradle 9 requires Java 17+
+mise-java = "17"
 
 [[gradle]]
 name = "9.x"

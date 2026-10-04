@@ -26,7 +26,7 @@ bodies empty by default.
 
 ## Build & test
 
-The build uses the Gradle 8.14.3 wrapper (the newest Gradle that still runs on Java 8; run it with JDK 8 via mise), `java-gradle-plugin`, source/target Java 8, and JUnit 5 with AssertJ for tests. Keep the plugin code usable with old consumer Gradle versions (e.g. use `tasks.create`, not `register`, which needs 4.9+); the blackbox tests check this down to 3.5.
+The build uses the Gradle 8.0.2 wrapper (run it with JDK 8 via mise), `java-gradle-plugin`, source/target Java 8, and JUnit 5 with AssertJ for tests. Keep the plugin code usable with old consumer Gradle versions (Gradle 8.0 is the oldest supported version, so don't use APIs newer than that); the blackbox tests check this down to 8.0. The wrapper (8.0.2) and the blackbox floor (8.0) are intentionally different Gradle versions, to widen coverage; don't align them. Because the build itself runs on 8.0.2, use `.set(...)` on lazy properties in `build.gradle` (e.g. `tags`, `website`); the `=` assignment only works from Gradle 8.2.
 
 - Build plugin jar: `./gradlew jar` (output in `build/libs/`)
 - Run tests: `./gradlew test`

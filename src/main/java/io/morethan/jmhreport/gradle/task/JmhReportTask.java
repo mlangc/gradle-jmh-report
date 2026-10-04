@@ -19,6 +19,7 @@ import io.morethan.jmhreport.Extensions;
 import io.morethan.jmhreport.gradle.JmhReportExtension;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.util.GradleVersion;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,6 +41,12 @@ public class JmhReportTask extends DefaultTask {
     //TODO declare input as input
     @TaskAction
     public void generateReport() throws IOException {
+        GradleVersion gradleVersion = GradleVersion.current();
+
+        if (gradleVersion.compareTo(GradleVersion.version("8.0")) < 0) {
+            getLogger().warn("This plugin doesn't support gradle versions < 8.0; it might still work, but you are on your own.");
+        }
+
         JmhReportExtension extension = getProject().getExtensions().getByType(JmhReportExtension.class);
         // project.file resolves relative paths against the project directory (and takes File as well as String)
         File reportFile = getProject().file(requireNonNull(extension.getJmhResultPath(), "jmhResultPath must not be null"));
