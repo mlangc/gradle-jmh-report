@@ -1,0 +1,12 @@
+apply plugin: 'com.github.mlangc.jmhreport'
+
+jmhReport {
+    jmhResultPath = project.file('build/reports/jmh/results.json')
+    jmhReportOutput = project.file('build/reports/jmh')
+}
+
+// Subclasses of JmhReportTask have to keep working; only myReport is supposed to produce the report here
+class MyReportTask extends com.github.mlangc.jmhreport.gradle.task.JmhReportTask {}
+
+tasks.named('jmhReport') { enabled = false }
+tasks.register('myReport', MyReportTask)

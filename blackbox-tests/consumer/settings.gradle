@@ -1,6 +1,6 @@
 rootProject.name = 'blackbox-consumer'
 
-['s1', 's2', 's3', 's4', 's5', 's6', 's8'].each { include it }
+['s1', 's2', 's3', 's4', 's5', 's6', 's8', 's9', 's10', 's11'].each { include it }
 // s7 uses the Kotlin DSL; check.py removes the directory on Gradle versions without support for it
 if (file('s7').directory) {
     include 's7'

@@ -19,9 +19,9 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
   downloaded on first use (`~/.gradle/wrapper/dists/`), JDKs come from mise.
 - Prints a version × scenario matrix and exits non-zero on any unexpected result. Gradle logs are kept in
   `build/logs/`; the temp project dirs are only kept when the check failed.
-- Deprecation warnings and the `--configuration-cache` run (Gradle ≥ 8) are reported but don't fail the check.
-  Today: `Task.project` deprecation on 8.x and 9.x, configuration cache fails. Both should go away with the
-  modernization; the configuration-cache run then becomes a hard check.
+- On Gradle ≥ 8, S1, S6 and S10 are also run twice each with `--configuration-cache` (the first run must store an
+  entry, the second must reuse it and regenerate the deleted report). A failure there fails the check. Deprecation warnings are
+  reported but don't fail the check. The result is the `CC` column of the matrix.
 
 ## Updating the golden
 
@@ -62,6 +62,9 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
 | S6 | defaults: no `jmhReport {}` block | golden |
 | S7 | as S1 in Kotlin DSL (skipped below Gradle 5, i.e. never at the moment) | golden |
 | S8 | as S1, run twice with a changed `score` in between | second run reflects the change (not UP-TO-DATE) |
+| S9 | as S1, plus a task declaring the input as its output, run together with `jmhReport` without a dependency | golden |
+| S10 | as S1, but the report comes from a subclass of `JmhReportTask` registered by the build script (`jmhReport` disabled) | golden |
+| S11 | a `JmhReportTask` registered by the build script, relative `File`s set directly on its properties (`jmhReport` disabled) | golden |
 
 S4 and S6 guard fixes of two bugs in 0.9.6: relative `String` paths (and so the defaults) used to resolve against
 the daemon's working directory, and the output folder used to have to exist already.

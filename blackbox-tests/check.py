@@ -77,6 +77,19 @@ SCENARIOS = [
     Scenario("S6", "s6", "results.json"),
     Scenario("S7", "s7", "results.json", min_major=5),  # Kotlin DSL
     Scenario("S8", "s8", "results.json"),  # run twice, see run_version
+    Scenario("S9", "s9", "results.json"),  # another task declares the input as its output
+    Scenario("S10", "s10", "results.json"),  # a subclass of JmhReportTask, registered by the build
+    Scenario("S11", "s11", "results.json"),  # relative paths set directly on the task properties
+]
+
+# Tasks that are run together with `jmhReport`, without any dependency between them
+EXTRA_TASKS = [":s9:fakeJmh", ":s10:myReport", ":s11:myReport"]
+
+# What the configuration cache is checked with: scenario id and the task to run
+CONFIGURATION_CACHE_RUNS = [
+    ("S1", ":s1:jmhReport"),
+    ("S6", ":s6:jmhReport"),
+    ("S10", ":s10:myReport"),
 ]
 
 
@@ -91,13 +104,17 @@ class VersionResult:
     gradle: GradleVersion
     outcomes: dict[str, Outcome] = field(default_factory=dict)
     deprecations: list[str] = field(default_factory=list)
-    configuration_cache: str | None = None
+    configuration_cache_problems: list[str] | None = None  # None: not checked
     error: str | None = None
     log: str = ""
 
     @property
     def failed(self) -> bool:
-        return self.error is not None or any(o.status == "fail" for o in self.outcomes.values())
+        return (
+            self.error is not None
+            or bool(self.configuration_cache_problems)
+            or any(o.status == "fail" for o in self.outcomes.values())
+        )
 
 
 # --------------------------------------------------------------------------------------------------
@@ -373,7 +390,7 @@ def run_version(
         if s.input_name is not None:
             place_input(consumer, s, original)
 
-    log = run_gradle(consumer, java_home, gradle, ["jmhReport"], log_file)
+    log = run_gradle(consumer, java_home, gradle, ["jmhReport", *EXTRA_TASKS], log_file)
     golden_files, golden_provided = golden if golden else ({}, {})
 
     def out_dir(s: Scenario) -> Path:
@@ -417,6 +434,11 @@ def run_version(
             continue  # after the second run
         else:
             problems = verify(s, original, with_run_name(golden_provided, s.run_name), True)
+            if s.id == "S9" and (
+                f"Task :{s.project}:fakeJmh FAILED" in log
+                or "without declaring an explicit or implicit dependency" in log
+            ):
+                problems.append("fakeJmh failed: undeclared dependency between it and jmhReport?")
             result.outcomes[s.id] = Outcome("fail" if problems else "pass", problems)
 
     s8 = SCENARIOS_BY_ID["S8"]
@@ -439,6 +461,21 @@ def run_version(
         ]
         result.outcomes["S8"] = Outcome("fail" if problems else "pass", problems)
 
+    if gradle.major >= 8 and golden is not None:
+        result.configuration_cache_problems = []
+        for sid, task in CONFIGURATION_CACHE_RUNS:
+            problems, cc_log = check_configuration_cache(
+                consumer, java_home, gradle, log_file, SCENARIOS_BY_ID[sid], task
+            )
+            if not problems:  # the report of the second run, which came from the cached entry
+                s = SCENARIOS_BY_ID[sid]
+                cc_provided = with_run_name(golden_provided, s.run_name)
+                problems = check_report(
+                    node, out_dir(s), input_file(s), original, cc_provided, golden_files, None
+                )
+            result.configuration_cache_problems += [f"{sid}: {p}" for p in problems]
+            log += "\n" + cc_log  # so that deprecations are found here as well
+
     result.deprecations = sorted(
         {
             ln.strip()
@@ -446,20 +483,43 @@ def run_version(
             if re.search(r"deprecated", ln, re.I) and not ln.lstrip().startswith("at ")
         }
     )
-    if gradle.major >= 8 and golden is not None:
-        cc_log = run_gradle(
-            consumer, java_home, gradle, ["--configuration-cache", ":s1:jmhReport"], log_file
-        )
-        s1_ok = real(out_dir(SCENARIOS_BY_ID["S1"])) in {
-            real(m) for m in CONSOLE_LINE.findall(cc_log)
-        }
-        succeeded = s1_ok and "BUILD SUCCESSFUL" in cc_log
-        result.configuration_cache = "passes" if succeeded else "fails"
     result.log = log
     return result, consumer
 
 
 SCENARIOS_BY_ID = {s.id: s for s in SCENARIOS}
+
+
+def check_configuration_cache(
+    consumer: Path, java_home: Path, gradle: GradleVersion, log_file: Path, s: Scenario, task: str
+) -> tuple[list[str], str]:
+    """Runs a task twice with the configuration cache: first stores an entry, second reuses it.
+
+    Returns the problems and the Gradle output."""
+    out = consumer / s.project / s.report_dir
+    args = ["--configuration-cache", task]
+    problems = []
+
+    def succeeded(log: str) -> bool:
+        reported = {real(m) for m in CONSOLE_LINE.findall(log)}
+        return real(out) in reported and "BUILD SUCCESSFUL" in log
+
+    log1 = run_gradle(consumer, java_home, gradle, args, log_file)
+    if "Configuration cache entry stored." not in log1:
+        problems.append("first run didn't store a configuration cache entry")
+    if not succeeded(log1):
+        problems.append("first run didn't succeed")
+
+    # Remove the report, so that the second run has to regenerate it from the cached task graph
+    (out / "index.html").unlink(missing_ok=True)
+    log2 = run_gradle(consumer, java_home, gradle, args, log_file)
+    if "Reusing configuration cache." not in log2:
+        problems.append("second run didn't reuse the configuration cache entry")
+    if not succeeded(log2):
+        problems.append("second run didn't succeed")
+    if not (out / "index.html").is_file():
+        problems.append("second run didn't regenerate the report")
+    return problems, log1 + "\n" + log2
 
 
 # --------------------------------------------------------------------------------------------------
@@ -518,6 +578,8 @@ def report(results: list[VersionResult]) -> bool:
         for sid, o in r.outcomes.items():
             for p in o.problems:
                 print(f"\n[{g.name}] {sid}: {p}")
+        for p in r.configuration_cache_problems or []:
+            print(f"\n[{g.name}] configuration cache: {p}")
         if r.error:
             ok = False  # an error in the check itself is never a known failure
         elif g.known_failure:
@@ -529,8 +591,15 @@ def report(results: list[VersionResult]) -> bool:
         elif r.failed:
             ok = False
 
-    headers = ["Gradle"] + [s.id for s in SCENARIOS]
-    rows = [[r.gradle.name] + [cell(r, s) for s in SCENARIOS] for r in results]
+    def cc_cell(r: VersionResult) -> str:
+        if r.error or r.configuration_cache_problems is None:
+            return "-"
+        if r.configuration_cache_problems:
+            return "known failure" if r.gradle.known_failure else "FAIL"
+        return "pass"
+
+    headers = ["Gradle"] + [s.id for s in SCENARIOS] + ["CC"]
+    rows = [[r.gradle.name] + [cell(r, s) for s in SCENARIOS] + [cc_cell(r)] for r in results]
     widths = [max(len(row[i]) for row in [headers, *rows]) for i in range(len(headers))]
     print()
     for row in [headers, *rows]:
@@ -541,8 +610,7 @@ def report(results: list[VersionResult]) -> bool:
         if r.error:
             continue
         deps = f"{len(r.deprecations)} deprecation line(s)" if r.deprecations else "no deprecations"
-        cc = f", configuration cache: {r.configuration_cache}" if r.configuration_cache else ""
-        print(f"  {r.gradle.name}: {deps}{cc}")
+        print(f"  {r.gradle.name}: {deps}")
         for d in r.deprecations:
             print(f"      {d}")
     return ok

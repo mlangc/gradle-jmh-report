@@ -1,0 +1,12 @@
+apply plugin: 'com.github.mlangc.jmhreport'
+
+jmhReport {
+    jmhResultPath = project.file('build/reports/jmh/results.json')
+    jmhReportOutput = project.file('build/reports/jmh')
+}
+
+// Like the task of a JMH plugin: declares the result file as its output. jmhReport doesn't depend on it.
+tasks.register('fakeJmh') {
+    outputs.file(project.file('build/reports/jmh/results.json'))
+    doLast {}
+}

@@ -16,8 +16,10 @@
 package com.github.mlangc.jmhreport.gradle.task;
 
 import com.github.mlangc.jmhreport.FsUtils;
-import com.github.mlangc.jmhreport.gradle.JmhReportExtension;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
 
@@ -38,7 +40,26 @@ import java.util.zip.ZipInputStream;
  **/
 public class JmhReportTask extends DefaultTask {
 
-    //TODO declare input as input
+    // Created in the constructor (not as abstract getters), so that subclasses stay possible without further ado
+    private final RegularFileProperty jmhResultFile = getProject().getObjects().fileProperty();
+    private final DirectoryProperty jmhReportOutputFolder = getProject().getObjects().directoryProperty();
+
+    /**
+     * The JMH result file (JSON) to report on; wired by the plugin from JmhReportExtension.
+     * Deliberately not an {@code @InputFile}: Gradle would then insist on a task dependency
+     * whenever another task declares the file as its output.
+     */
+    @Internal
+    public RegularFileProperty getJmhResultFile() {
+        return jmhResultFile;
+    }
+
+    /** The folder the report is written to; wired by the plugin from JmhReportExtension. */
+    @Internal
+    public DirectoryProperty getJmhReportOutputFolder() {
+        return jmhReportOutputFolder;
+    }
+
     @TaskAction
     public void generateReport() throws IOException {
         GradleVersion gradleVersion = GradleVersion.current();
@@ -47,10 +68,8 @@ public class JmhReportTask extends DefaultTask {
             getLogger().warn("This plugin doesn't support gradle versions < 8.0; it might still work, but you are on your own.");
         }
 
-        JmhReportExtension extension = getProject().getExtensions().getByType(JmhReportExtension.class);
-        // project.file resolves relative paths against the project directory (and takes File as well as String)
-        File reportFile = getProject().file(requireNonNull(extension.getJmhResultPath(), "jmhResultPath must not be null"));
-        File outputFolder = getProject().file(requireNonNull(extension.getJmhReportOutput(), "jmhReportOutput must not be null"));
+        File reportFile = getJmhResultFile().get().getAsFile();
+        File outputFolder = getJmhReportOutputFolder().get().getAsFile();
 
         if (!reportFile.exists()) {
             throw new IllegalStateException("Input '" + reportFile.getCanonicalFile() + "' does not exists!");
@@ -80,13 +99,6 @@ public class JmhReportTask extends DefaultTask {
             writer.println("};");
         }
         System.out.println("JMH Report generated, please open: file://" + outputFolder + "/index.html");
-    }
-
-    private static String requireNonNull(String value, String message) {
-        if (value == null) {
-            throw new IllegalStateException(message);
-        }
-        return value;
     }
 
     private static String removeExtension(String fileName) {
