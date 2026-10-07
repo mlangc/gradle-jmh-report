@@ -2,7 +2,8 @@
 
 Black-box check for the plugin jar: it runs the built jar under several consumer Gradle versions and compares the
 generated report with a golden snapshot. It is independent of the Gradle build in the repo root, so it keeps working
-while that build is modernized. Background and rationale: `plans/2026-10-03-BLACKBOX-TESTS.md`.
+while that build is modernized. Background and rationale: `plans/2026-10-03-BLACKBOX-TESTS.md`; the `--repo` mode comes from
+`plans/2026-10-06-RELEASE-1.0.0.md`.
 
 ## Running
 
@@ -15,6 +16,20 @@ uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar [--gradle 8.0,8.x]
 uv run ruff check && uv run ruff format --check && uv run mypy .
 ```
 
+- Alternatively check a *published* plugin through its plugin marker artifact, as real users get it (S10's
+  `JmhReportTask` reference and the `CC` runs included). `check.py` only consumes a repository; produce one outside
+  of it, from the repository root, with a throw-away local repo so that `~/.m2` is never touched or shadowed:
+
+  ```
+  ./gradlew publishToMavenLocal -Dmaven.repo.local=<tmp>
+  cd blackbox-tests
+  uv run check.py --repo <tmp> --plugin-version <v> [--gradle 8.0,8.x]
+  ```
+
+  `--repo` and `--plugin-version` are required together and mutually exclusive with `--jar`. File repositories
+  aren't cached in the Gradle user home, so a stale copy of the same version can't hide a change.
+  A `--portal` mode (repository block = `gradlePluginPortal()`, nothing else changes) is planned in
+  `plans/2026-10-06-RELEASE-1.0.0.md`.
 - `--gradle` takes names from `gradle-versions.toml`; without it every entry runs. Gradle distributions are
   downloaded on first use (`~/.gradle/wrapper/dists/`), JDKs come from mise.
 - Prints a version × scenario matrix and exits non-zero on any unexpected result. Gradle logs are kept in
@@ -43,8 +58,10 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
   `distribution = "all"` selects the `-all` distribution (no version uses it at the moment). `known-failure = "<reason>"` marks a
   version where the jar is known to fail; it then shows as "known failure", and the check complains once it
   passes again so the field gets removed. No version has one at the moment.
-- `consumer/`: the Gradle fixture project, one subproject per scenario, loading the jar from `libs/` through
-  `flatDir` (filled by `check.py`, which also adds a wrapper for the Gradle version under test). The daemon runs
+- `consumer/`: the Gradle fixture project, one subproject per scenario; the subprojects apply the plugin by ID.
+  `check.py` generates the root `build.gradle` (jar mode: `buildscript` classpath from `libs/` through `flatDir`;
+  repo mode: `plugins { id … version … apply false }`) and, in repo mode, prepends a `pluginManagement`
+  block with the repository to `settings.gradle`; it also adds a wrapper for the Gradle version under test. The daemon runs
   with `-Dfile.encoding=US-ASCII` on purpose.
 - `data/results.json`: the input fixture. A copy of `e2e/fixtures/linked-hash-first-vs-iter-next-benchmark.json`
   from https://github.com/mlangc/jmh-visualizer at commit `ff75572af2effc5ea9e1441515713bced82a3597`, with

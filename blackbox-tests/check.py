@@ -54,6 +54,51 @@ class GradleVersion:
         return int(self.version.split(".")[0])
 
 
+PLUGIN_ID = "com.github.mlangc.jmhreport"
+
+
+@dataclass(frozen=True)
+class PluginSource:
+    """Where the consumer gets the plugin from: a jar in `libs/` (`flatDir`), or a Maven repository
+    with the plugin marker artifact (`--repo`). `--portal` will only change `repositories_block`."""
+
+    jar: Path | None = None
+    repo: Path | None = None
+    version: str | None = None
+
+    def root_build_script(self) -> str:
+        if self.jar is not None:
+            return (
+                "// The jar under test is put into libs/ by check.py.\n"
+                "// No kotlin-stdlib is added on purpose: plugin classloaders see Gradle's\n"
+                "// bundled one parent-first anyway.\n"
+                "buildscript {\n"
+                "    repositories {\n"
+                "        flatDir {\n"
+                "            dirs file('libs').absolutePath\n"
+                "        }\n"
+                "    }\n"
+                "    dependencies {\n"
+                "        classpath 'com.github.mlangc:gradle-jmh-report'\n"
+                "    }\n"
+                "}\n"
+            )
+        # Resolved through the plugin marker artifact, like real users do. `apply false` puts the
+        # plugin on the classpath of all subprojects, which then apply it by ID, as in the jar mode.
+        return f"plugins {{\n    id '{PLUGIN_ID}' version '{self.version}' apply false\n}}\n"
+
+    def settings_prefix(self) -> str:
+        """Goes in front of the fixture's settings.gradle (`pluginManagement` has to come first)."""
+        if self.jar is not None:
+            return ""
+        repositories = self.repositories_block()
+        return f"pluginManagement {{\n    repositories {{\n{repositories}    }}\n}}\n\n"
+
+    def repositories_block(self) -> str:
+        assert self.repo is not None
+        return f"        maven {{ url = uri('{self.repo.as_posix()}') }}\n"
+
+
 @dataclass(frozen=True)
 class Scenario:
     id: str
@@ -180,12 +225,16 @@ def real(path: str | Path) -> str:
 # Gradle runs
 
 
-def prepare_consumer(workdir: Path, jar: Path, gradle: GradleVersion) -> Path:
+def prepare_consumer(workdir: Path, source: PluginSource, gradle: GradleVersion) -> Path:
     consumer = workdir / "consumer"
     shutil.copytree(CONSUMER, consumer, ignore=shutil.ignore_patterns("libs", "build", ".gradle"))
-    libs = consumer / "libs"
-    libs.mkdir()
-    shutil.copy(jar, libs / "gradle-jmh-report.jar")
+    if source.jar is not None:
+        libs = consumer / "libs"
+        libs.mkdir()
+        shutil.copy(source.jar, libs / "gradle-jmh-report.jar")
+    (consumer / "build.gradle").write_text(source.root_build_script())
+    settings = consumer / "settings.gradle"
+    settings.write_text(source.settings_prefix() + settings.read_text())
 
     shutil.copy(REPO / "gradlew", consumer / "gradlew")
     wrapper = consumer / "gradle" / "wrapper"
@@ -365,7 +414,7 @@ def check_report(
 
 def run_version(
     gradle: GradleVersion,
-    jar: Path,
+    source: PluginSource,
     node: str,
     golden: tuple[dict[str, str], dict[str, Any]] | None,
     keep: list[Path],
@@ -380,7 +429,7 @@ def run_version(
 
     workdir = Path(tempfile.mkdtemp(prefix=f"jmhreport-blackbox-{gradle.name}-"))
     keep.append(workdir)
-    consumer = prepare_consumer(workdir, jar, gradle)
+    consumer = prepare_consumer(workdir, source, gradle)
     log_file = LOGS / f"gradle-{gradle.name}.log"
     log_file.unlink(missing_ok=True)
 
@@ -621,7 +670,13 @@ def report(results: list[VersionResult]) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--jar", required=True, type=Path, help="the plugin jar to check")
+    parser.add_argument("--jar", type=Path, help="the plugin jar to check (default mode)")
+    parser.add_argument(
+        "--repo",
+        type=Path,
+        help="Maven repository with the published plugin (see CLAUDE.md); needs --plugin-version",
+    )
+    parser.add_argument("--plugin-version", help="plugin version to apply from --repo")
     parser.add_argument("--gradle", help="comma-separated names from gradle-versions.toml")
     parser.add_argument(
         "--update-golden",
@@ -642,10 +697,20 @@ def main() -> int:
         selected = [by_name[n] for n in names]
     if args.update_golden and len(selected) != 1:
         parser.error("--update-golden requires exactly one name in --gradle")
-    if not args.jar.is_file():
-        parser.error(f"{args.jar} doesn't exist")
-
-    jar = args.jar.resolve()
+    if args.repo is not None or args.plugin_version is not None:
+        if args.jar is not None:
+            parser.error("--jar is mutually exclusive with --repo and --plugin-version")
+        if args.repo is None or args.plugin_version is None:
+            parser.error("--repo and --plugin-version are required together")
+        if not args.repo.is_dir():
+            parser.error(f"{args.repo} isn't a directory")
+        source = PluginSource(repo=args.repo.resolve(), version=args.plugin_version)
+    else:
+        if args.jar is None:
+            parser.error("one of --jar or --repo/--plugin-version is required")
+        if not args.jar.is_file():
+            parser.error(f"{args.jar} doesn't exist")
+        source = PluginSource(jar=args.jar.resolve())
     node = resolve_node()
     golden = None if args.update_golden else read_golden()
 
@@ -655,7 +720,7 @@ def main() -> int:
     try:
         for g in selected:
             try:
-                result, consumers[g.name] = run_version(g, jar, node, golden, keep)
+                result, consumers[g.name] = run_version(g, source, node, golden, keep)
             except (CheckError, subprocess.TimeoutExpired) as e:
                 result = VersionResult(g, error=str(e))
             results.append(result)
