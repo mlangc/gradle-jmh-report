@@ -8,7 +8,7 @@ repositories {
 }
 
 version = projectVersion
-group = 'com.github.mlangc'
+group = 'io.github.mlangc'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -32,8 +32,8 @@ gradlePlugin {
 
   plugins {
     jmhReportPlugin {
-      id = 'com.github.mlangc.jmhreport'
-      implementationClass = 'com.github.mlangc.jmhreport.gradle.JmhReportPlugin'
+      id = 'io.github.mlangc.jmhreport'
+      implementationClass = 'io.github.mlangc.jmhreport.gradle.JmhReportPlugin'
       displayName = 'JMH Report plugin'
       description = 'A Gradle plugin building a visual report on top of your JMH benchmark results!'
       tags.set(['jmh', 'report', 'visualization'])

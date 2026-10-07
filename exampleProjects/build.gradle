@@ -13,7 +13,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.github.mlangc:gradle-jmh-report:${projectVersion.getProperty('projectVersion')}"
+        classpath "io.github.mlangc:gradle-jmh-report:${projectVersion.getProperty('projectVersion')}"
     }
 }
 

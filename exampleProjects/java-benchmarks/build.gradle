@@ -1,5 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'com.github.mlangc.jmhreport'
+apply plugin: 'io.github.mlangc.jmhreport'
 
 apply from: rootProject.file('jmh.gradle')
 

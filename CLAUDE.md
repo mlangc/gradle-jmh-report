@@ -4,7 +4,7 @@ This file provides guidance to agents when working with code in this repository.
 
 ## What this is
 
-A Gradle plugin (`com.github.mlangc.jmhreport`, written in Java 8) that turns an existing JMH JSON result file into an HTML report. It does **not** run benchmarks; it only reports on results already produced by some other JMH setup.
+A Gradle plugin (`io.github.mlangc.jmhreport`, written in Java 8) that turns an existing JMH JSON result file into an HTML report. It does **not** run benchmarks; it only reports on results already produced by some other JMH setup.
 
 ## Commit message style
 
@@ -30,7 +30,7 @@ The build uses the Gradle 8.0.2 wrapper (run it with JDK 8 via mise), `java-grad
 
 - Build plugin jar: `./gradlew jar` (output in `build/libs/`)
 - Run tests: `./gradlew test`
-- Single test class: `./gradlew test --tests com.github.mlangc.jmhreport.FsUtilsTest` (JUnit 5 with AssertJ)
+- Single test class: `./gradlew test --tests io.github.mlangc.jmhreport.FsUtilsTest` (JUnit 5 with AssertJ)
 - End-to-end check against the example project (uses the jar from `build/libs` via a `flatDir` repo):
   `./gradlew jar; (cd exampleProjects && ./gradlew :java-benchmarks:jmh -Pinclude=".*QuickBenchmark.*")`
   The example's `jmh` task is finalized by `jmhReport`, which writes `exampleProjects/java-benchmarks/build/reports/jmh/index.html`.
@@ -41,7 +41,7 @@ The build uses the Gradle 8.0.2 wrapper (run it with JDK 8 via mise), `java-grad
 
 The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](https://github.com/jzillmann/jmh-visualizer), shipped here as a prebuilt bundle.
 
-- The plugin ID (`com.github.mlangc.jmhreport`) and `JmhReportPlugin` are declared in the `gradlePlugin {}` block of `build.gradle`; `java-gradle-plugin` generates the `META-INF/gradle-plugins/*.properties` mapping from it.
+- The plugin ID (`io.github.mlangc.jmhreport`) and `JmhReportPlugin` are declared in the `gradlePlugin {}` block of `build.gradle`; `java-gradle-plugin` generates the `META-INF/gradle-plugins/*.properties` mapping from it.
 - `JmhReportPlugin` registers the `jmhReport` extension (`JmhReportExtension`: `jmhResultPath`, `jmhReportOutput`) and the `jmhReport` task.
 - `JmhReportTask` does all the work. It has two `@Internal` properties, `jmhResultFile` and `jmhReportOutputFolder`; the plugin sets them as conventions, for every `JmhReportTask` (also ones a build registers itself), lazily from the extension, with relative paths resolved against the project directory. The action must never touch `project` (configuration cache). They are deliberately not `@InputFile`/`@OutputDirectory`: Gradle would then demand a task dependency when e.g. a JMH task declares the result file as its output, and the report would become skippable.
   1. Extracts `src/main/resources/jmh-visualizer.zip` (the built jmh-visualizer webapp: `index.html`, `bundle.js`, fonts, and a placeholder `provided.js`) into `jmhReportOutput`, using `FsUtils.extract`.

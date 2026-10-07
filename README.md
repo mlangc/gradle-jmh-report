@@ -7,7 +7,7 @@
 
 ## News
 
-- 2026/MM/DD - 1.0.0 Release - On pair with jmh-visualizer-1.0.0 / New plugin ID and group (`com.github.mlangc`, was `io.morethan.jmhreport`), Gradle configuration cache support, requires Gradle 8.0 or newer
+- 2026/MM/DD - 1.0.0 Release - On pair with jmh-visualizer-1.0.0 / New plugin ID and group (`io.github.mlangc`, was `io.morethan.jmhreport`), Gradle configuration cache support, requires Gradle 8.0 or newer
 - 2024/04/19 - 0.9.6 Release - On pair with jmh-visualizer-0.9.6 / Couple of bug fixes
 - 2018/10/03 - 0.9.0 Release - On pair with jmh-visualizer-0.9.1 / [Couple of smaller features](https://github.com/jzillmann/jmh-visualizer/milestone/6?closed=1)
 - 2018/07/29 - 0.8.0 Release - On pair with jmh-visualizer-0.8.2 / Technical update, minor bug fixes
@@ -34,10 +34,10 @@
 - Add the plugin:
 ```
 plugins {
-  id "com.github.mlangc.jmhreport" version "1.0.0"
+  id "io.github.mlangc.jmhreport" version "1.0.0"
 }
 ```
-  - **Coordinates:** Starting with 1.0.0 the plugin ID is `com.github.mlangc.jmhreport` (previously `io.morethan.jmhreport`), so 1.0.0 is not published under the old ID. The `jmhReport { jmhResultPath, jmhReportOutput }` extension and the `jmhReport` task are unchanged.
+  - **Coordinates:** Starting with 1.0.0 the plugin ID is `io.github.mlangc.jmhreport` (previously `io.morethan.jmhreport`), so 1.0.0 is not published under the old ID. The `jmhReport { jmhResultPath, jmhReportOutput }` extension and the `jmhReport` task are unchanged.
   - **Requirements:** Gradle 8.0 or newer.
 - Configure the plugin (only needed if your paths differ from the defaults shown here; relative paths are resolved against the project directory):
 ```

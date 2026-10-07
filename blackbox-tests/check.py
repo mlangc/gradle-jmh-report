@@ -54,7 +54,7 @@ class GradleVersion:
         return int(self.version.split(".")[0])
 
 
-PLUGIN_ID = "com.github.mlangc.jmhreport"
+PLUGIN_ID = "io.github.mlangc.jmhreport"
 
 
 @dataclass(frozen=True)
@@ -79,7 +79,7 @@ class PluginSource:
                 "        }\n"
                 "    }\n"
                 "    dependencies {\n"
-                "        classpath 'com.github.mlangc:gradle-jmh-report'\n"
+                "        classpath 'io.github.mlangc:gradle-jmh-report'\n"
                 "    }\n"
                 "}\n"
             )

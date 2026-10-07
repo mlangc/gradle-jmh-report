@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.mlangc.jmhreport.gradle.task;
+package io.github.mlangc.jmhreport.gradle.task;
 
-import com.github.mlangc.jmhreport.FsUtils;
+import io.github.mlangc.jmhreport.FsUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;

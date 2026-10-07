@@ -1,4 +1,4 @@
-package com.github.mlangc.jmhreport;
+package io.github.mlangc.jmhreport;
 
 import org.junit.jupiter.api.Test;
 

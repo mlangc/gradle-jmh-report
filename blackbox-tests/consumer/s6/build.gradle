@@ -1,2 +1,2 @@
 // Defaults only: no jmhReport {} block
-apply plugin: 'com.github.mlangc.jmhreport'
+apply plugin: 'io.github.mlangc.jmhreport'

@@ -1,9 +1,9 @@
-apply plugin: 'com.github.mlangc.jmhreport'
+apply plugin: 'io.github.mlangc.jmhreport'
 
 // Relative paths set directly on the task have to be resolved against the project directory.
 // The extension is left alone; the built-in jmhReport task is disabled, so that only myReport produces the report.
 tasks.named('jmhReport') { enabled = false }
-tasks.register('myReport', com.github.mlangc.jmhreport.gradle.task.JmhReportTask) {
+tasks.register('myReport', io.github.mlangc.jmhreport.gradle.task.JmhReportTask) {
     jmhResultFile = new File('build/reports/jmh/results.json')
     jmhReportOutputFolder = new File('build/reports/jmh')
 }
