@@ -1,5 +1,6 @@
-"""Black-box check: runs the built plugin jar under several Gradle versions and compares the report
-output with the golden snapshot in golden/. See CLAUDE.md in this folder."""
+"""Black-box check: runs the built plugin (jar or published repository) under several Gradle
+versions and compares the report output with the golden snapshot in golden/. See CLAUDE.md in
+this folder."""
 
 from __future__ import annotations
 
@@ -60,7 +61,8 @@ PLUGIN_ID = "io.github.mlangc.jmhreport"
 @dataclass(frozen=True)
 class PluginSource:
     """Where the consumer gets the plugin from: a jar in `libs/` (`flatDir`), or a Maven repository
-    with the plugin marker artifact (`--repo`). `--portal` will only change `repositories_block`."""
+    with the plugin marker artifact (`--repo`). `--portal` will add a third mode that only differs
+    in `repositories_block`."""
 
     jar: Path | None = None
     repo: Path | None = None
@@ -702,6 +704,8 @@ def main() -> int:
             parser.error("--jar is mutually exclusive with --repo and --plugin-version")
         if args.repo is None or args.plugin_version is None:
             parser.error("--repo and --plugin-version are required together")
+        if not args.plugin_version.strip() or "'" in args.plugin_version + str(args.repo):
+            parser.error("--plugin-version must be non-empty; no ' allowed in it or in --repo")
         if not args.repo.is_dir():
             parser.error(f"{args.repo} isn't a directory")
         source = PluginSource(repo=args.repo.resolve(), version=args.plugin_version)

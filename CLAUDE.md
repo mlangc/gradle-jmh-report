@@ -55,7 +55,7 @@ The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](ht
 1. (Optional) Update the visualizer: in jmh-visualizer run `npm run providedZip`, then replace `src/main/resources/jmh-visualizer.zip`.
 2. Bump `projectVersion` in `gradle.properties`.
 3. Update *News* and *Getting Started* in `README.md` (`exampleProjects/` reads the plugin version from `gradle.properties`).
-4. Test the report with the example project (command above), and run the black-box tests (`blackbox-tests/CLAUDE.md`).
+4. Test the report with the example project (command above), and run the black-box tests, in `--jar` and `--repo` mode (`blackbox-tests/CLAUDE.md`).
 5. Validate the publication without uploading: `./gradlew publishPlugins --validate-only` (needs `gradle.publish.key` / `gradle.publish.secret`).
 6. Commit, tag (`git tag -a $releaseVersion -m "$releaseVersion release"`, `git push --tags`), then `./gradlew publishPlugins`.
 

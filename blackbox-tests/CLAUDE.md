@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Black-box check for the plugin jar: it runs the built jar under several consumer Gradle versions and compares the
+Black-box check for the plugin: it runs the built jar (or a published copy) under several consumer Gradle versions and compares the
 generated report with a golden snapshot. It is independent of the Gradle build in the repo root, so it keeps working
 while that build is modernized. Background and rationale: `plans/2026-10-03-BLACKBOX-TESTS.md`; the `--repo` mode comes from
 `plans/2026-10-06-RELEASE-1.0.0.md`.
@@ -21,9 +21,10 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
   of it, from the repository root, with a throw-away local repo so that `~/.m2` is never touched or shadowed:
 
   ```
-  ./gradlew publishToMavenLocal -Dmaven.repo.local=<tmp>
+  R=$(mktemp -d)                    # must be an absolute path
+  ./gradlew publishToMavenLocal -Dmaven.repo.local=$R
   cd blackbox-tests
-  uv run check.py --repo <tmp> --plugin-version <v> [--gradle 8.0,8.x]
+  uv run check.py --repo $R --plugin-version <v> [--gradle 8.0,8.x]
   ```
 
   `--repo` and `--plugin-version` are required together and mutually exclusive with `--jar`. File repositories
