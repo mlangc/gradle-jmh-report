@@ -37,6 +37,11 @@ gradlePlugin {
       displayName = 'JMH Report plugin'
       description = 'A Gradle plugin building a visual report on top of your JMH benchmark results!'
       tags.set(['jmh', 'report', 'visualization'])
+      compatibility(it) {
+        features {
+          configurationCache.set(true)
+        }
+      }
     }
   }
 }
