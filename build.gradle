@@ -40,3 +40,26 @@ gradlePlugin {
     }
   }
 }
+
+publishing {
+  publications {
+    pluginMaven(MavenPublication) {
+      pom {
+        name.set('JMH Report plugin')
+        description.set('A Gradle plugin building a visual report on top of your JMH benchmark results!')
+        url.set('https://github.com/mlangc/gradle-jmh-report')
+        licenses {
+          license {
+            name.set('The Apache License, Version 2.0')
+            url.set('https://www.apache.org/licenses/LICENSE-2.0.txt')
+          }
+        }
+        scm {
+          url.set('https://github.com/mlangc/gradle-jmh-report')
+          connection.set('scm:git:https://github.com/mlangc/gradle-jmh-report.git')
+          developerConnection.set('scm:git:git@github.com:mlangc/gradle-jmh-report.git')
+        }
+      }
+    }
+  }
+}
