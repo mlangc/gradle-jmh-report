@@ -2,7 +2,7 @@
 
 Black-box check for the plugin: it runs the built jar (or a published copy) under several consumer Gradle versions and compares the
 generated report with a golden snapshot. It is independent of the Gradle build in the repo root, so it keeps working
-while that build is modernized. Background and rationale: `plans/2026-10-03-BLACKBOX-TESTS.md`; the `--repo` mode comes from
+while that build is modernized. Background and rationale: `plans/2026-10-03-BLACKBOX-TESTS.md`; the `--repo` and `--portal` modes come from
 `plans/2026-10-06-RELEASE-1.0.0.md`.
 
 ## Running
@@ -29,8 +29,17 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
 
   `--repo` and `--plugin-version` are required together and mutually exclusive with `--jar`. File repositories
   aren't cached in the Gradle user home, so a stale copy of the same version can't hide a change.
-  A `--portal` mode (repository block = `gradlePluginPortal()`, nothing else changes) is planned in
-  `plans/2026-10-06-RELEASE-1.0.0.md`.
+- After a release, check the plugin as published on the Gradle Plugin Portal (repository block =
+  `gradlePluginPortal()`, nothing else differs from `--repo`):
+
+  ```
+  uv run check.py --portal --plugin-version <v> [--gradle 8.0,8.x]
+  ```
+
+  `--portal` needs `--plugin-version` and is mutually exclusive with `--jar` and `--repo`. It needs network
+  access, and the portal may take a while to serve a fresh version; failures are release findings. Unlike
+  file repositories, the Gradle user home caches downloaded artifacts, so a changed re-publication of the same
+  version could be hidden by a stale cache.
 - `--gradle` takes names from `gradle-versions.toml`; without it every entry runs. Gradle distributions are
   downloaded on first use (`~/.gradle/wrapper/dists/`), JDKs come from mise.
 - Prints a version × scenario matrix and exits non-zero on any unexpected result. Gradle logs are kept in
@@ -61,8 +70,8 @@ hashes of the extracted visualizer files and the two `provided.js` globals as ca
   passes again so the field gets removed. No version has one at the moment.
 - `consumer/`: the Gradle fixture project, one subproject per scenario; the subprojects apply the plugin by ID.
   `check.py` generates the root `build.gradle` (jar mode: `buildscript` classpath from `libs/` through `flatDir`;
-  repo mode: `plugins { id … version … apply false }`) and, in repo mode, prepends a `pluginManagement`
-  block with the repository to `settings.gradle`; it also adds a wrapper for the Gradle version under test. The daemon runs
+  repo and portal mode: `plugins { id … version … apply false }`) and, in repo mode, prepends a `pluginManagement`
+  block with the repository (`maven {}` or `gradlePluginPortal()`) to `settings.gradle`; it also adds a wrapper for the Gradle version under test. The daemon runs
   with `-Dfile.encoding=US-ASCII` on purpose.
 - `data/results.json`: the input fixture. A copy of `e2e/fixtures/linked-hash-first-vs-iter-next-benchmark.json`
   from https://github.com/mlangc/jmh-visualizer at commit `ff75572af2effc5ea9e1441515713bced82a3597`, with

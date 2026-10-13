@@ -60,12 +60,13 @@ PLUGIN_ID = "io.github.mlangc.jmhreport"
 
 @dataclass(frozen=True)
 class PluginSource:
-    """Where the consumer gets the plugin from: a jar in `libs/` (`flatDir`), or a Maven repository
-    with the plugin marker artifact (`--repo`). `--portal` will add a third mode that only differs
-    in `repositories_block`."""
+    """Where the consumer gets the plugin from: a jar in `libs/` (`flatDir`), or the plugin marker
+    artifact in a Maven repository (`--repo`) or on the Gradle Plugin Portal (`--portal`). The last
+    two only differ in `repositories_block`."""
 
     jar: Path | None = None
     repo: Path | None = None
+    portal: bool = False
     version: str | None = None
 
     def root_build_script(self) -> str:
@@ -97,6 +98,8 @@ class PluginSource:
         return f"pluginManagement {{\n    repositories {{\n{repositories}    }}\n}}\n\n"
 
     def repositories_block(self) -> str:
+        if self.portal:
+            return "        gradlePluginPortal()\n"
         assert self.repo is not None
         return f"        maven {{ url = uri('{self.repo.as_posix()}') }}\n"
 
@@ -678,7 +681,12 @@ def main() -> int:
         type=Path,
         help="Maven repository with the published plugin (see CLAUDE.md); needs --plugin-version",
     )
-    parser.add_argument("--plugin-version", help="plugin version to apply from --repo")
+    parser.add_argument(
+        "--portal",
+        action="store_true",
+        help="check the plugin published on the Gradle Plugin Portal; needs --plugin-version",
+    )
+    parser.add_argument("--plugin-version", help="plugin version to apply from --repo or --portal")
     parser.add_argument("--gradle", help="comma-separated names from gradle-versions.toml")
     parser.add_argument(
         "--update-golden",
@@ -699,19 +707,27 @@ def main() -> int:
         selected = [by_name[n] for n in names]
     if args.update_golden and len(selected) != 1:
         parser.error("--update-golden requires exactly one name in --gradle")
-    if args.repo is not None or args.plugin_version is not None:
+    if args.repo is not None or args.portal or args.plugin_version is not None:
         if args.jar is not None:
-            parser.error("--jar is mutually exclusive with --repo and --plugin-version")
-        if args.repo is None or args.plugin_version is None:
-            parser.error("--repo and --plugin-version are required together")
+            parser.error("--jar is mutually exclusive with --repo, --portal and --plugin-version")
+        if args.repo is not None and args.portal:
+            parser.error("--repo and --portal are mutually exclusive")
+        if (args.repo is None and not args.portal) or args.plugin_version is None:
+            parser.error(
+                "--plugin-version is required together with exactly one of --repo/--portal"
+            )
         if not args.plugin_version.strip() or "'" in args.plugin_version + str(args.repo):
             parser.error("--plugin-version must be non-empty; no ' allowed in it or in --repo")
-        if not args.repo.is_dir():
+        if args.repo is not None and not args.repo.is_dir():
             parser.error(f"{args.repo} isn't a directory")
-        source = PluginSource(repo=args.repo.resolve(), version=args.plugin_version)
+        source = PluginSource(
+            repo=args.repo.resolve() if args.repo is not None else None,
+            portal=args.portal,
+            version=args.plugin_version,
+        )
     else:
         if args.jar is None:
-            parser.error("one of --jar or --repo/--plugin-version is required")
+            parser.error("one of --jar, --repo or --portal is required")
         if not args.jar.is_file():
             parser.error(f"{args.jar} doesn't exist")
         source = PluginSource(jar=args.jar.resolve())

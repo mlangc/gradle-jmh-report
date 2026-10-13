@@ -73,3 +73,4 @@ jmhReport {
     - `git tag -a $releaseVersion -m "$releaseVersion release"`
     - `git push --tags`
   - Execute: `./gradlew publishPlugins`
+  - Once the portal serves the new version, check it: `cd blackbox-tests; uv run check.py --portal --plugin-version $releaseVersion`

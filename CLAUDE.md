@@ -58,6 +58,7 @@ The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](ht
 4. Test the report with the example project (command above), and run the black-box tests, in `--jar` and `--repo` mode (`blackbox-tests/CLAUDE.md`).
 5. Validate the publication without uploading: `./gradlew publishPlugins --validate-only` (needs `gradle.publish.key` / `gradle.publish.secret`).
 6. Commit, tag (`git tag -a $releaseVersion -m "$releaseVersion release"`, `git push --tags`), then `./gradlew publishPlugins`.
+7. Once the Plugin Portal serves the new version, check what users download: `cd blackbox-tests; uv run check.py --portal --plugin-version $releaseVersion` (`blackbox-tests/CLAUDE.md`).
 
 ## Agentic Reviews
 
