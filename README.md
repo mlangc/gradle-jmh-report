@@ -2,12 +2,11 @@
 
 **_gradle-jmh-report_** is a [Gradle](http://gradle.org) plugin to manage and visualize the result of your [JMH](http://openjdk.java.net/projects/code-tools/jmh/) benchmarks.
 
-**Note:** **This plugin is not for executing benchmarks**, its for reporting on already executed benchmarks. There are multiple ways how you can setup your JMH benchmark execution in Gradle, i've written in this [blog post](https://blog.morethan.io/jmh-with-gradle-from-easy-to-simple-dc872d57cf7f) about it!
-
+**Note:** **This plugin is not for executing benchmarks**, it's for reporting on already executed benchmarks. There are multiple ways how you can setup your JMH benchmark execution in Gradle, I've written in this [blog post](https://blog.morethan.io/jmh-with-gradle-from-easy-to-simple-dc872d57cf7f) about it!
 
 ## News
 
-- 2026/10/09 - 1.0.0 Release - On pair with jmh-visualizer-1.0.0 / New plugin ID `io.github.mlangc.jmhreport` (was 
+- 2026/10/09 - 1.0.0 Release - On pair with jmh-visualizer-1.0.0 / New plugin ID `io.github.mlangc.jmhreport` (was
   `io.morethan.jmhreport`) and group `io.github.mlangc`, Gradle configuration cache support, requires Gradle 8.0 or newer
 - 2024/04/19 - 0.9.6 Release - On pair with jmh-visualizer-0.9.6 / Couple of bug fixes
 - 2018/10/03 - 0.9.0 Release - On pair with jmh-visualizer-0.9.1 / [Couple of smaller features](https://github.com/jzillmann/jmh-visualizer/milestone/6?closed=1)
@@ -19,53 +18,61 @@
 - 2017/05/14 - 0.2.0 Release - Integrate https://github.com/jzillmann/jmh-visualizer
 - 2016/12/10 - 0.1.0 Release
 
-
-
 ## Features
 
 - Create a HTML report for one benchmark run
 
 **Wanted:**
-- Create a HTML report for multiple benchmark runs 
+- Create a HTML report for multiple benchmark runs
 - Archive your benchmark results in a structured way
 
-
 ## Getting Started
-- Setup JMH for your project (However you wanne do it, you can use a [plugin](https://github.com/melix/jmh-gradle-plugin) or a simple [do-it-your-self script](exampleProjects/jmh.gradle). 
-- Add the plugin:
-```
+- Setup JMH for your project by using the [jmh-gradle-plugin](https://github.com/melix/jmh-gradle-plugin)
+- Add the plugins:
+```groovy
 plugins {
-  id "io.github.mlangc.jmhreport" version "1.0.0"
+  id "me.champeau.jmh" version "<jmhGradlePluginVersion>"
+  id "io.github.mlangc.jmhreport" version "<jmhReportPluginVersion>"
 }
 ```
   - **Coordinates:** Starting with 1.0.0 the plugin ID is `io.github.mlangc.jmhreport` (previously `io.morethan.jmhreport`), so 1.0.0 is not published under the old ID. The `jmhReport { jmhResultPath, jmhReportOutput }` extension and the `jmhReport` task are unchanged.
   - **Requirements:** Gradle 8.0 or newer.
-- Configure the plugin (only needed if your paths differ from the defaults shown here; relative paths are resolved against the project directory):
-```
-jmhReport {
-    jmhResultPath = project.file('build/reports/jmh/results.json')
-    jmhReportOutput = project.file('build/reports/jmh')
+- Configure the plugin:
+```groovy
+jmh {
+  // Add this to your configuration for the jmh-gradle plugin, since the jmh-report plugin consumes JSON reports
+  resultFormat = "JSON"
 }
-```
-- Build the report
-  - Given your benchmarks have been executed and the json result file is present, you can execute ```./gradlew jmhReport``` which will build the html report.
-  - You can setup a finalizer hook as well: ```tasks.jmh.finalizedBy tasks.jmhReport```. With this, every time you execute your jmh benchmarks, e.g. with _./gradlew jmh_, the _jmhReport_ task will run at the end.
 
+jmhReport {
+    // Must point to a JSON report from JMH; this path is the default for the jmh-gradle-plugin,
+    // but for historical reasons, not for this plugin.
+    jmhResultPath = "build/results/jmh/results.json"
+
+    // Whatever you prefer - this path is the default
+    jmhReportOutput = "build/reports/jmh"
+}
+
+// Runs `jmhReport` every time you execute your benchmarks using `jmh`
+tasks.jmh.finalizedBy tasks.jmhReport
+```
+  - Relative paths are resolved against the project directory.
+- Build the report
+  - Using the finalizer hook from the snippet above, a report is automatically generated whenever you run `jmh`
+  - Run `./gradlew jmhReport` if you want to generate the report independently
 
 ## This is how it looks
 
 ![screenshot](https://cloud.githubusercontent.com/assets/148472/26032319/ace91322-3890-11e7-9d0e-7314020a8953.png)
 
-
 ## Project Build
-- Execute the examples: `./gradlew jar ;cd exampleProjects; ./gradlew :java-benchmarks:jmh`
+- Execute the examples `./gradlew jar ;cd exampleProjects; ./gradlew jmh`
 - How to publish the Gradle plugin:
   - (Optional) Integrate new version of https://github.com/mlangc/jmh-visualizer
     - `npm run providedZip`
     - `mv jmh-visualizer.zip <path to this repository>/src/main/resources/`
   - Increase version in _gradle.properties_
   - Update _News_ and _Getting Started_ in _README.md_
-  - Test report: `./gradlew jar ;cd exampleProjects; ./gradlew :java-benchmarks:jmh -Pinclude=".*QuickBenchmark.*"`
   - Run the black-box tests (`--jar`, and `--repo` against a locally published repository), see _blackbox-tests/CLAUDE.md_
   - Validate the publication: `./gradlew publishPlugins --validate-only`
   - Commit & Push

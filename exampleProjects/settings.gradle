@@ -1,3 +1,9 @@
 rootProject.name = 'example-projects'
 
 include 'java-benchmarks', 'kotlin-benchmarks'
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}

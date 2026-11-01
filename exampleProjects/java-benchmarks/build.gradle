@@ -1,7 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'io.github.mlangc.jmhreport'
-
-apply from: rootProject.file('jmh.gradle')
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.3'
+    id 'io.github.mlangc.jmhreport'
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -15,14 +16,18 @@ dependencies {
     implementation 'org.apache.hadoop:hadoop-common:2.6.0'
     implementation 'org.apache.hadoop:hadoop-hdfs:2.6.0'
 
-    implementation 'com.yahoo.datasketches:memory:0.8.4'
+    jmh 'com.yahoo.datasketches:memory:0.8.4'
+    jmh 'org.assertj:assertj-core:3.27.7'
+}
 
-    jmhImplementation 'org.assertj:assertj-core:3.27.7'
+jmh {
+    resultFormat = 'JSON'
+    zip64 = true
+    includes = ['.*Quick.*']
 }
 
 jmhReport {
-    jmhResultPath = project.file('build/reports/jmh/result.json')
-    jmhReportOutput = project.file('build/reports/jmh')
+    jmhResultPath = 'build/results/jmh/results.json'
 }
 
 tasks.jmh.finalizedBy tasks.jmhReport

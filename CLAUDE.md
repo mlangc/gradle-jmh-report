@@ -32,8 +32,8 @@ The build uses the Gradle 8.0.2 wrapper (run it with JDK 8 via mise), `java-grad
 - Run tests: `./gradlew test`
 - Single test class: `./gradlew test --tests io.github.mlangc.jmhreport.FsUtilsTest` (JUnit 5 with AssertJ)
 - End-to-end check against the example project (uses the jar from `build/libs` via a `flatDir` repo):
-  `./gradlew jar; (cd exampleProjects && ./gradlew :java-benchmarks:jmh -Pinclude=".*QuickBenchmark.*")`
-  The example's `jmh` task is finalized by `jmhReport`, which writes `exampleProjects/java-benchmarks/build/reports/jmh/index.html`.
+  `./gradlew jar; (cd exampleProjects && ./gradlew jmh)`
+  This runs both examples (the Java one is restricted to its `QuickBenchmark`). Their `jmh` task is finalized by `jmhReport`, which writes `exampleProjects/<project>/build/reports/jmh/index.html`.
 - Black-box check of the built jar against a golden report, under several Gradle versions: see
   `blackbox-tests/CLAUDE.md`. Run it before and after changes to the plugin or the build.
 
@@ -48,7 +48,7 @@ The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](ht
   2. Overwrites `provided.js` with the JMH result JSON embedded as JS globals (`providedBenchmarks`, `providedBenchmarkStore`, keyed by the result file's base name). jmh-visualizer reads these globals at load time, so the contract between the two projects is the shape of `provided.js`.
 - The task declares no Gradle inputs/outputs, so it is never up-to-date and always re-runs.
 
-`exampleProjects/` is a standalone multi-project Gradle build (own wrapper; `java-benchmarks` and `kotlin-benchmarks` subprojects) that consumes the locally built jar. `exampleProjects/jmh.gradle` is a do-it-yourself JMH setup script they apply (supports `-Pinclude`, `-Pexclude`, `-Pformat`, `-Pprofilers`, `-PjvmArgs`).
+`exampleProjects/` is a standalone multi-project Gradle build (own wrapper; `java-benchmarks` and `kotlin-benchmarks` subprojects) that consumes the locally built jar. They use the [`me.champeau.jmh`](https://github.com/melix/jmh-gradle-plugin) plugin for running JMH (configured with `resultFormat = 'JSON'`, so the result lands in `build/results/jmh/results.json`, which is why `jmhResultPath` is set explicitly).
 
 ## Release process (from README)
 

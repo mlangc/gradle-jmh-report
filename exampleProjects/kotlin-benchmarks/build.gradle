@@ -1,10 +1,8 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.4.20'
-    id 'org.jetbrains.kotlin.kapt' version '2.4.20'
+    id 'me.champeau.jmh' version '0.7.3'
+    id 'io.github.mlangc.jmhreport'
 }
-apply plugin: 'io.github.mlangc.jmhreport'
-
-apply from: rootProject.file('jmh.gradle')
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -18,14 +16,15 @@ kotlin {
 }
 
 dependencies {
-    implementation 'com.google.guava:guava:19.0'
+    jmh 'com.google.guava:guava:19.0'
+}
 
-    kaptJmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+jmh {
+    resultFormat = 'JSON'
 }
 
 jmhReport {
-    jmhResultPath = project.file('build/reports/jmh/result.json')
-    jmhReportOutput = project.file('build/reports/jmh')
+    jmhResultPath = 'build/results/jmh/results.json'
 }
 
 tasks.jmh.finalizedBy tasks.jmhReport

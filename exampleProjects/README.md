@@ -15,5 +15,4 @@ cd exampleProjects
 ./gradlew :kotlin-benchmarks:jmh
 ```
 
-Use `-Pinclude=".*QuickBenchmark.*"` to run only some benchmarks (see `./gradlew jmhHelp`). The report ends up in
-`<project>/build/reports/jmh/index.html`.
+The report ends up in `<project>/build/reports/jmh/index.html`.
