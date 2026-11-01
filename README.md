@@ -40,13 +40,14 @@ plugins {
 - Configure the plugin:
 ```groovy
 jmh {
-  // Add this to your configuration for the jmh-gradle plugin, since the jmh-report plugin consumes JSON reports
+  // Add this to your configuration for the jmh-gradle plugin, since the
+  // jmh-report plugin consumes JSON reports
   resultFormat = "JSON"
 }
 
 jmhReport {
-    // Must point to a JSON report from JMH; this path is the default for the jmh-gradle-plugin,
-    // but for historical reasons, not for this plugin.
+    // Must point to a JSON report from JMH; this path is the default for the
+    // jmh-gradle-plugin, but for historical reasons, not for this plugin.
     jmhResultPath = "build/results/jmh/results.json"
 
     // Whatever you prefer - this path is the default
