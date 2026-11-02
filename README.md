@@ -69,9 +69,14 @@ tasks.jmh.finalizedBy tasks.jmhReport
 ## Project Build
 - Execute the examples `./gradlew jar ;cd exampleProjects; ./gradlew jmh`
 - How to publish the Gradle plugin:
-  - (Optional) Integrate new version of https://github.com/mlangc/jmh-visualizer
-    - `npm run providedZip`
-    - `mv jmh-visualizer.zip <path to this repository>/src/main/resources/`
+  - (Optional) Integrate a new version of https://github.com/mlangc/jmh-visualizer
+    - Download `jmh-visualizer.zip` from its GitHub releases:
+      `gh release download <version> -R mlangc/jmh-visualizer -p jmh-visualizer.zip -D src/main/resources --clobber`
+    - Build the jar and run the examples (see above), then open `exampleProjects/*/build/reports/jmh/index.html` in a
+      browser and check by eye that the report renders and works. The black-box tests only compare hashes, so they
+      can't tell a broken bundle from a good one.
+    - The black-box tests are expected to fail on the changed bundle files. Once the report looks fine, re-record the
+      golden (`--update-golden`, see _blackbox-tests/CLAUDE.md_) and review `git diff blackbox-tests/golden/`.
   - Increase version in _gradle.properties_
   - Update _News_ and _Getting Started_ in _README.md_
   - Run the black-box tests (`--jar`, and `--repo` against a locally published repository), see _blackbox-tests/CLAUDE.md_

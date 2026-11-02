@@ -53,7 +53,9 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
 
 ## Updating the golden
 
-Only when the plugin's output is meant to change (e.g. a new jmh-visualizer bundle):
+Only when the plugin's output is meant to change (e.g. a new jmh-visualizer bundle). The golden holds only hashes, so
+before re-recording, open a report generated from the example projects in a browser and check it by eye (see
+*Project Build* in the root `README.md`); otherwise a broken report can be blessed unnoticed:
 
 ```
 uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar --update-golden --gradle <name>

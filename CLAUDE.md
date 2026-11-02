@@ -50,15 +50,10 @@ The plugin is tiny; the real UI lives in a separate project, [jmh-visualizer](ht
 
 `exampleProjects/` is a standalone multi-project Gradle build (own wrapper; `java-benchmarks` and `kotlin-benchmarks` subprojects) that consumes the locally built jar. They use the [`me.champeau.jmh`](https://github.com/melix/jmh-gradle-plugin) plugin for running JMH (configured with `resultFormat = 'JSON'`, so the result lands in `build/results/jmh/results.json`, which is why `jmhResultPath` is set explicitly).
 
-## Release process (from README)
+## Release process
 
-1. (Optional) Update the visualizer: in jmh-visualizer run `npm run providedZip`, then replace `src/main/resources/jmh-visualizer.zip`.
-2. Bump `projectVersion` in `gradle.properties`.
-3. Update *News* and *Getting Started* in `README.md` (`exampleProjects/` reads the plugin version from `gradle.properties`).
-4. Test the report with the example project (command above), and run the black-box tests, in `--jar` and `--repo` mode (`blackbox-tests/CLAUDE.md`).
-5. Validate the publication without uploading: `./gradlew publishPlugins --validate-only` (needs `gradle.publish.key` / `gradle.publish.secret`).
-6. Commit, tag (`git tag -a $releaseVersion -m "$releaseVersion release"`, `git push --tags`), then `./gradlew publishPlugins`.
-7. Once the Plugin Portal serves the new version, check what users download: `cd blackbox-tests; uv run check.py --portal --plugin-version $releaseVersion` (`blackbox-tests/CLAUDE.md`).
+The steps, including how to update the bundled jmh-visualizer, live in the *Project Build* section of `README.md`; that is the single source, so don't copy them here.
+Note that `exampleProjects/` reads the plugin version from `gradle.properties`.
 
 ## Agentic Reviews
 
