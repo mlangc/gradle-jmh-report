@@ -1,6 +1,6 @@
 plugins {
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '2.1.1'
+    id 'com.gradle.plugin-publish' version '2.2.1'
 }
 
 repositories {
@@ -22,6 +22,11 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.27.7'
 }
 
+tasks.withType(JavaCompile).configureEach {
+    // The build runs on JDK 17 (plugin-publish 2.2), the plugin has to stay Java 8 compatible
+    options.release.set(8)
+}
+
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
@@ -40,6 +45,7 @@ gradlePlugin {
       compatibility(it) {
         features {
           configurationCache.set(true)
+          isolatedProjects.set(true)
         }
       }
     }

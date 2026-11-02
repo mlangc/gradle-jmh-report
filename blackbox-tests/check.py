@@ -142,6 +142,11 @@ CONFIGURATION_CACHE_RUNS = [
     ("S10", ":s10:myReport"),
 ]
 
+# The same runs again, with Isolated Projects. The extra project property is part of the
+# configuration cache key; some Gradle versions (8.0) don't include the Isolated Projects flag,
+# and would silently reuse the entry stored by the plain configuration cache runs.
+ISOLATED_PROJECTS_ARGS = ["-Dorg.gradle.unsafe.isolated-projects=true", "-PisolatedProjectsCheck"]
+
 
 @dataclass
 class Outcome:
@@ -155,6 +160,7 @@ class VersionResult:
     outcomes: dict[str, Outcome] = field(default_factory=dict)
     deprecations: list[str] = field(default_factory=list)
     configuration_cache_problems: list[str] | None = None  # None: not checked
+    isolated_projects_problems: list[str] | None = None  # None: not checked
     error: str | None = None
     log: str = ""
 
@@ -163,6 +169,7 @@ class VersionResult:
         return (
             self.error is not None
             or bool(self.configuration_cache_problems)
+            or bool(self.isolated_projects_problems)
             or any(o.status == "fail" for o in self.outcomes.values())
         )
 
@@ -515,20 +522,26 @@ def run_version(
         ]
         result.outcomes["S8"] = Outcome("fail" if problems else "pass", problems)
 
-    if gradle.major >= 8 and golden is not None:
-        result.configuration_cache_problems = []
+    def cached_runs(extra_args: list[str]) -> list[str]:
+        problems_found: list[str] = []
+        nonlocal log
         for sid, task in CONFIGURATION_CACHE_RUNS:
+            s = SCENARIOS_BY_ID[sid]
             problems, cc_log = check_configuration_cache(
-                consumer, java_home, gradle, log_file, SCENARIOS_BY_ID[sid], task
+                consumer, java_home, gradle, log_file, s, task, extra_args
             )
             if not problems:  # the report of the second run, which came from the cached entry
-                s = SCENARIOS_BY_ID[sid]
                 cc_provided = with_run_name(golden_provided, s.run_name)
                 problems = check_report(
                     node, out_dir(s), input_file(s), original, cc_provided, golden_files, None
                 )
-            result.configuration_cache_problems += [f"{sid}: {p}" for p in problems]
+            problems_found += [f"{sid}: {p}" for p in problems]
             log += "\n" + cc_log  # so that deprecations are found here as well
+        return problems_found
+
+    if gradle.major >= 8 and golden is not None:
+        result.configuration_cache_problems = cached_runs([])
+        result.isolated_projects_problems = cached_runs(ISOLATED_PROJECTS_ARGS)
 
     result.deprecations = sorted(
         {
@@ -545,13 +558,19 @@ SCENARIOS_BY_ID = {s.id: s for s in SCENARIOS}
 
 
 def check_configuration_cache(
-    consumer: Path, java_home: Path, gradle: GradleVersion, log_file: Path, s: Scenario, task: str
+    consumer: Path,
+    java_home: Path,
+    gradle: GradleVersion,
+    log_file: Path,
+    s: Scenario,
+    task: str,
+    extra_args: list[str],
 ) -> tuple[list[str], str]:
     """Runs a task twice with the configuration cache: first stores an entry, second reuses it.
 
     Returns the problems and the Gradle output."""
     out = consumer / s.project / s.report_dir
-    args = ["--configuration-cache", task]
+    args = [*extra_args, "--configuration-cache", task]
     problems = []
 
     def succeeded(log: str) -> bool:
@@ -634,6 +653,8 @@ def report(results: list[VersionResult]) -> bool:
                 print(f"\n[{g.name}] {sid}: {p}")
         for p in r.configuration_cache_problems or []:
             print(f"\n[{g.name}] configuration cache: {p}")
+        for p in r.isolated_projects_problems or []:
+            print(f"\n[{g.name}] isolated projects: {p}")
         if r.error:
             ok = False  # an error in the check itself is never a known failure
         elif g.known_failure:
@@ -652,8 +673,18 @@ def report(results: list[VersionResult]) -> bool:
             return "known failure" if r.gradle.known_failure else "FAIL"
         return "pass"
 
-    headers = ["Gradle"] + [s.id for s in SCENARIOS] + ["CC"]
-    rows = [[r.gradle.name] + [cell(r, s) for s in SCENARIOS] + [cc_cell(r)] for r in results]
+    def ip_cell(r: VersionResult) -> str:
+        if r.error or r.isolated_projects_problems is None:
+            return "-"
+        if r.isolated_projects_problems:
+            return "known failure" if r.gradle.known_failure else "FAIL"
+        return "pass"
+
+    headers = ["Gradle"] + [s.id for s in SCENARIOS] + ["CC", "IP"]
+    rows = [
+        [r.gradle.name] + [cell(r, s) for s in SCENARIOS] + [cc_cell(r), ip_cell(r)]
+        for r in results
+    ]
     widths = [max(len(row[i]) for row in [headers, *rows]) for i in range(len(headers))]
     print()
     for row in [headers, *rows]:

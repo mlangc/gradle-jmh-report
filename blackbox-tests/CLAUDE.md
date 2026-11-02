@@ -10,7 +10,7 @@ while that build is modernized. Background and rationale: `plans/2026-10-03-BLAC
 Needs `mise install` (Java versions, `node`, `uv`). From the repository root:
 
 ```
-./gradlew jar                                              # JDK 8 via mise, as usual
+./gradlew jar                                              # JDK 17 via mise, as usual
 cd blackbox-tests
 uv run check.py --jar ../build/libs/gradle-jmh-report-<v>.jar [--gradle 8.0,8.x]
 uv run ruff check && uv run ruff format --check && uv run mypy .
@@ -47,6 +47,8 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
 - On Gradle ≥ 8, S1, S6 and S10 are also run twice each with `--configuration-cache` (the first run must store an
   entry, the second must reuse it and regenerate the deleted report). A failure there fails the check. Deprecation warnings are
   reported but don't fail the check. The result is the `CC` column of the matrix.
+- The same three runs are repeated with Isolated Projects (`-Dorg.gradle.unsafe.isolated-projects=true`), giving the `IP` column. The extra
+  `-PisolatedProjectsCheck` keeps the configuration cache entries of the two passes apart.
 
 ## Updating the golden
 
