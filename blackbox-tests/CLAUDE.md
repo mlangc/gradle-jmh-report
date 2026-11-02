@@ -17,7 +17,7 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
 ```
 
 - Alternatively check a *published* plugin through its plugin marker artifact, as real users get it (S10's
-  `JmhReportTask` reference and the `CC` runs included). `check.py` only consumes a repository; produce one outside
+  `JmhReportTask` reference and the `CC` and `IP` runs included). `check.py` only consumes a repository; produce one outside
   of it, from the repository root, with a throw-away local repo so that `~/.m2` is never touched or shadowed:
 
   ```
@@ -48,7 +48,8 @@ uv run ruff check && uv run ruff format --check && uv run mypy .
   entry, the second must reuse it and regenerate the deleted report). A failure there fails the check. Deprecation warnings are
   reported but don't fail the check. The result is the `CC` column of the matrix.
 - The same three runs are repeated with Isolated Projects (`-Dorg.gradle.unsafe.isolated-projects=true`), giving the `IP` column. The extra
-  `-PisolatedProjectsCheck` keeps the configuration cache entries of the two passes apart.
+  `-PisolatedProjectsCheck` keeps the configuration cache entries of the two passes apart. The IP runs must also log that Isolated Projects is
+  active (matched case-insensitively), so that a renamed or ignored flag can't make the column pass vacuously.
 
 ## Updating the golden
 
