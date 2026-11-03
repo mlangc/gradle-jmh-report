@@ -6,6 +6,7 @@
 
 ## News
 
+- 2026/11/03 - 1.1.0 Release - On pair with jmh-visualizer-1.1.0 / Declare `Isolated Projects` compatibility
 - 2026/10/09 - 1.0.0 Release - On pair with jmh-visualizer-1.0.0 / New plugin ID `io.github.mlangc.jmhreport` (was
   `io.morethan.jmhreport`) and group `io.github.mlangc`, Gradle configuration cache support, requires Gradle 8.0 or newer
 - 2024/04/19 - 0.9.6 Release - On pair with jmh-visualizer-0.9.6 / Couple of bug fixes
